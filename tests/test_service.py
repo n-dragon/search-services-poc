@@ -28,7 +28,7 @@ def client(monkeypatch):
 def test_search_provenance(client):
     result = client.get('/api/search', params={'q': 'index'}).json()
     assert result['backend'] == 'vespa'
-    assert result['corpus_version'] == 'systems-cards-fr-v2'
+    assert result['corpus_version'] == 'systems-and-wikipedia-fr-v3'
     assert result['hits'][0]['id'] == 'index'
     assert result['hits'][0]['source'].startswith('https://')
 
@@ -101,3 +101,10 @@ def test_public_events_and_admin_isolation(client, monkeypatch, tmp_path):
     assert client.get('/api/summary').status_code == 404
     assert client.get('/admin').status_code == 404
     assert client.post('/api/events',json={'event':'view','page':'search','ip':'1.2.3.4'}).status_code == 422
+
+
+def test_allowed_ranking_profile(client):
+    result = client.get('/api/search', params={'q': 'index', 'ranking': 'lexical-balanced'})
+    assert result.status_code == 200
+    assert result.json()['ranking_profile'] == 'lexical-balanced'
+    assert client.get('/api/search', params={'q': 'index', 'ranking': 'arbitrary'}).status_code == 422

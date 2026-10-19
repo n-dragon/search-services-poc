@@ -5,7 +5,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app app
 COPY scripts scripts
 COPY vespa vespa
-RUN mkdir -p /data && chown 10001:10001 /data
+RUN mkdir -p /data /ingestion && chown 10001:10001 /data /ingestion
 ENV ANALYTICS_DB=/data/analytics.sqlite3
 USER 10001
 EXPOSE 8000

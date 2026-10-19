@@ -24,10 +24,26 @@ services:
     build: .
     volumes:
       - analytics-data:/data
+      - wikipedia-data:/ingestion:ro
     ports:
       - "127.0.0.1:8000:8000"
     environment:
       VESPA_URL: http://vespa:8080
+      WIKIPEDIA_DB: /ingestion/wikipedia.sqlite3
+    depends_on:
+      bootstrap:
+        condition: service_completed_successfully
+    restart: unless-stopped
+  wikipedia:
+    profiles: [live]
+    build: .
+    command: ["python", "-m", "scripts.wikipedia"]
+    environment:
+      VESPA_URL: http://vespa:8080
+      WIKIPEDIA_DB: /data/wikipedia.sqlite3
+      WIKIPEDIA_LIMIT: "2000"
+    volumes:
+      - wikipedia-data:/data
     depends_on:
       bootstrap:
         condition: service_completed_successfully
@@ -41,5 +57,6 @@ services:
       - analytics-data:/data
     restart: unless-stopped
 volumes:
+  wikipedia-data:
   analytics-data:
   vespa-data:

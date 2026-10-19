@@ -3,7 +3,9 @@ import os
 import re
 import httpx
 
-CORPUS_VERSION = "systems-cards-fr-v2"
+RANKINGS = {"lexical", "lexical-balanced"}
+
+CORPUS_VERSION = "systems-and-wikipedia-fr-v3"
 
 class SearchUnavailable(Exception):
     pass
@@ -28,20 +30,23 @@ class VespaBackend:
         except (httpx.HTTPError, ValueError) as exc:
             raise SearchUnavailable("Search backend unavailable") from exc
 
-    def search(self, query: str, limit: int = 5):
+    def search(self, query: str, limit: int = 5, ranking: str = "lexical"):
+        if ranking not in RANKINGS:
+            raise ValueError("Unknown ranking profile")
         query = query.strip()
         if not 1 <= len(query) <= 256 or not 1 <= limit <= 10:
             raise ValueError("query must have 1–256 characters; limit must be 1–10")
         data = self._request("/search/", {
             "yql": "select * from sources card where userInput(@query)",
-            "query": query, "type": "any", "ranking": "lexical", "language": "fr",
+            "query": query, "type": "any", "ranking": ranking, "language": "fr",
             "hits": limit, "timeout": "2s",
         })
         hits = [{"id": h["fields"]["card_id"], "title": h["fields"]["title"],
-                 "body": h["fields"]["body"], "source": h["fields"]["source"],
-                 "score": h.get("relevance", 0)}
+                 "body": h["fields"]["body"][:400], "source": h["fields"]["source"],
+                 **{key: h["fields"].get(key, "") for key in ("corpus", "revision", "indexed_at", "license", "history")},
+                 "features": h["fields"].get("summaryfeatures", {}), "score": h.get("relevance", 0)}
                 for h in data.get("root", {}).get("children", []) if "fields" in h]
-        return {"backend": "vespa", "ranking": "BM25", "corpus_version": CORPUS_VERSION,
+        return {"backend": "vespa", "ranking": "BM25", "ranking_profile": ranking, "corpus_version": CORPUS_VERSION,
                 "total": data.get("root", {}).get("fields", {}).get("totalCount", 0), "hits": hits}
 
     def get_document(self, document_id: str):

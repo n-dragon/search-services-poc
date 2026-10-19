@@ -1,15 +1,31 @@
 schema card {
   document card {
     field language type string { indexing: "fr" | set_language }
-    field card_id type string { indexing: summary | attribute }
+    field card_id type string { indexing: summary }
     field title type string { indexing: summary | index
       index: enable-bm25 }
     field body type string { indexing: summary | index
       index: enable-bm25 }
     field source type string { indexing: summary }
+    field corpus type string { indexing: summary | attribute }
+    field revision type string { indexing: summary }
+    field indexed_at type string { indexing: summary }
+    field license type string { indexing: summary }
+    field history type string { indexing: summary }
   }
   fieldset default { fields: title, body }
+  # Explicit defaults: baseline parameters, not empirically optimized values.
   rank-profile lexical {
+    rank-properties {
+      bm25(title).k1: 1.2
+      bm25(title).b: 0.75
+      bm25(body).k1: 1.2
+      bm25(body).b: 0.75
+    }
     first-phase { expression: 2 * bm25(title) + bm25(body) }
+    summary-features { bm25(title) bm25(body) }
+  }
+  rank-profile lexical-balanced inherits lexical {
+    first-phase { expression: bm25(title) + bm25(body) }
   }
 }

@@ -10,7 +10,8 @@ A focused POC of search infrastructure exposed as tools for agents: **Vespa BM25
 
 - Real Vespa lexical retrieval, no simulated fallback.
 - Read-only HTTP API and MCP tools: `search_documents`, `get_document`.
-- Original, versioned ten-document French educational corpus with source references (`systems-cards-fr-v2`), with explicit French language processing at indexing and query time.
+- Ten original French systems cards plus a bounded live French Wikipedia introduction corpus, with explicit French linguistic processing. Pipeline version: `systems-and-wikipedia-fr-v3`.
+- Durable SSE checkpoints/inbox, serial idempotent writes, deletion handling and periodic reconciliation. Live status: `/api/ingestion`.
 - Stable ingestion identifiers and replay-safe replacement writes.
 - Bounded search concurrency, bounded query size/results and backend timeouts.
 - Separate liveness/readiness endpoints; request/error/duration counters.
@@ -20,7 +21,7 @@ A focused POC of search infrastructure exposed as tools for agents: **Vespa BM25
 - Web UI and containerized bootstrap.
 - Unit/API/MCP transport checks and a CI job designed to run against real Vespa.
 
-The tiny corpus establishes integration, not retrieval quality or scale. Vector retrieval, public datasets, checkpointed ingestion, quality evaluation and load benchmarks are roadmap items.
+The bounded corpus establishes integration and live synchronization, not retrieval quality or scale. Vector retrieval, quality evaluation and load benchmarks remain roadmap items. See [continuous ingestion](docs/wikipedia.md) for operational limits.
 
 ## Start locally
 
@@ -46,7 +47,7 @@ docker compose logs -f bootstrap web
 docker compose down
 ```
 
-`down` preserves indexed data. Use `docker compose up --force-recreate bootstrap` to replay the fixed corpus after edits. Document IDs are stable; deletion reconciliation is not implemented.
+`down` preserves indexed data. Use `docker compose up --force-recreate bootstrap` to replay the fixed corpus after edits. Fixed-card IDs are stable; removed fixed cards are not automatically reconciled. Live Wikipedia pages have a separate deletion/reconciliation pipeline.
 
 ## Verify without Docker
 
@@ -81,6 +82,9 @@ flowchart TD
     MCP --> Backend
     Backend --> Vespa[Vespa BM25 index]
     Feed[Bootstrap ingestion] --> Vespa
+    Wikimedia[Wikimedia SSE] --> Inbox[Durable SQLite inbox]
+    Inbox --> Worker[Serial ingestion worker]
+    Worker --> Vespa
 ```
 
 The service is intentionally single-node and read-only for users. There is no HA claim, user-upload endpoint, SQL/SPARQL execution, or expensive reranker. The concurrency limit is process-local: use one worker as configured. Metrics cover search calls; they are not a complete production observability stack. `get_document` shares the HTTP connection-pool and timeout limits, but has no independent semaphore.
@@ -92,7 +96,7 @@ The Vespa and Caddy images currently use major-version tags. Resolve and pin tes
 1. **Release gate:** run Docker CI; deploy to a VM; verify remote search and MCP; record deployment URL and commit.
 2. Add NFCorpus/BEIR ingestion with data provenance, license notes and fixed dataset versions.
 3. Compare BM25, vector and hybrid retrieval using nDCG@10 and Recall@100.
-4. Add checkpointed bulk ingestion and interruption/replay tests.
+4. Extend the durable live pipeline to bulk snapshots and test reconciliation beyond stream retention.
 5. Benchmark p50/p95/p99, QPS, errors, index size and memory with explicit hardware/concurrency.
 6. Add a bounded RDF/SPARQL tool and a small versioned knowledge-graph extract.
 7. Exercise multi-node failure/recovery before making resilience claims.

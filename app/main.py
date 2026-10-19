@@ -10,9 +10,10 @@ from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
 from pydantic import Field
-from typing import Annotated
+from typing import Annotated, Literal
 from app.backend import VespaBackend, SearchUnavailable, CORPUS_VERSION
 from app.analytics import Event, record
+from app.ingestion import snapshot
 
 backend = VespaBackend()
 mcp = FastMCP("Search Services POC", stateless_http=True, json_response=True,
@@ -26,13 +27,13 @@ metrics_lock = threading.Lock()
 metrics = {"requests": 0, "errors": 0, "duration_seconds": 0.0}
 
 
-def bounded_search(query, limit):
+def bounded_search(query, limit, ranking="lexical"):
     if not slots.acquire(blocking=False):
         raise SearchUnavailable("Search concurrency limit reached; retry later")
     start = time.perf_counter()
     failed = False
     try:
-        return backend.search(query, limit)
+        return backend.search(query, limit, ranking)
     except Exception:
         failed = True
         raise
@@ -48,9 +49,10 @@ def bounded_search(query, limit):
 def search_documents(
     query: Annotated[str, Field(min_length=1, max_length=256)],
     limit: Annotated[int, Field(ge=1, le=10)] = 5,
+    ranking: Literal["lexical", "lexical-balanced"] = "lexical",
 ) -> dict:
-    """Search the versioned systems corpus using Vespa BM25; return source links."""
-    return bounded_search(query, limit)
+    """Search systems cards and live French Wikipedia introductions using Vespa BM25."""
+    return bounded_search(query, limit, ranking)
 
 
 @mcp.tool()
@@ -101,11 +103,17 @@ def ready():
     return {"status": "ready", "backend": "vespa", "corpus_version": CORPUS_VERSION}
 
 
+@app.get("/api/ingestion")
+def ingestion():
+    return snapshot()
+
+
 @app.get("/api/search")
-def search(q: str = Query(min_length=1, max_length=256), limit: int = Query(default=5, ge=1, le=10)):
+def search(q: str = Query(min_length=1, max_length=256), limit: int = Query(default=5, ge=1, le=10),
+           ranking: Literal["lexical", "lexical-balanced"] = "lexical"):
     if not q.strip():
         raise HTTPException(422, "Query cannot be blank")
-    return bounded_search(q, limit)
+    return bounded_search(q, limit, ranking)
 
 
 @app.get("/api/documents/{document_id}")

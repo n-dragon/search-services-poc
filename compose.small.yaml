@@ -17,6 +17,9 @@ services:
   proxy:
     mem_limit: 128m
     cpus: 0.5
+  wikipedia:
+    mem_limit: 128m
+    cpus: 0.5
   analytics:
     mem_limit: 128m
     cpus: 0.5

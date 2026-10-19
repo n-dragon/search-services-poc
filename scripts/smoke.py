@@ -1,5 +1,6 @@
 """Check a real deployed service; Python standard library only."""
 import json
+import math
 import os
 import time
 import urllib.parse
@@ -32,9 +33,15 @@ def main():
         raise AssertionError("Private analytics API must not be mounted on the public app")
     assert 'lang="fr"' in page
     result = get("/api/search?" + urllib.parse.urlencode({"q": "réplication"}))
-    assert result['hits'] and result['hits'][0]['id'] == 'replication', result
+    assert result['hits'], result
+    for ranking, weight in [('lexical', 2), ('lexical-balanced', 1)]:
+        ranked = get('/api/search?' + urllib.parse.urlencode({'q': 'réplication', 'ranking': ranking}))
+        assert ranked['ranking_profile'] == ranking
+        hit = ranked['hits'][0]
+        features = hit['features']
+        assert math.isclose(hit['score'], weight*features['bm25(title)']+features['bm25(body)'], rel_tol=1e-5, abs_tol=1e-6), hit
     document = get('/api/documents/replication')
-    assert document['corpus_version'] == 'systems-cards-fr-v2'
+    assert document['corpus_version'] == 'systems-and-wikipedia-fr-v3'
     assert document['title'].startswith('Réplication')
     for method, params in [('initialize', {'protocolVersion': '2025-03-26', 'capabilities': {}, 'clientInfo': {'name': 'smoke', 'version': '1'}}), ('tools/list', {})]:
         body = json.dumps({'jsonrpc': '2.0', 'id': 1, 'method': method, 'params': params}).encode()

@@ -24,7 +24,7 @@ else
   overlay=compose.http.yaml
   url="http://$DEMO_HOST"
 fi
-compose=(docker compose -p search-services-poc --env-file .deploy.env -f compose.yaml -f "$overlay" -f compose.small.yaml)
+compose=(docker compose --profile live -p search-services-poc --env-file .deploy.env -f compose.yaml -f "$overlay" -f compose.small.yaml)
 failed() {
   "${compose[@]}" ps
   "${compose[@]}" logs --no-color --tail=100
@@ -37,9 +37,10 @@ COMPOSE_PARALLEL_LIMIT=1 "${compose[@]}" build
 # Re-run bootstrap on every release without deleting its data or other services.
 "${compose[@]}" up -d vespa
 "${compose[@]}" up -d --force-recreate bootstrap
-"${compose[@]}" up -d web proxy analytics
+"${compose[@]}" up -d web proxy analytics wikipedia
 python3 scripts/check_analytics.py
 python3 scripts/smoke.py
+python3 scripts/check_wikipedia.py
 "${compose[@]}" ps
 docker stats --no-stream "$("${compose[@]}" ps -q vespa)" "$("${compose[@]}" ps -q web)"
 printf '%s\n' "$DEPLOY_COMMIT" > .deployed-commit

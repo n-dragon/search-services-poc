@@ -56,7 +56,23 @@ jobs:
             export POC_URL="http://$SSH_HOST"
           fi
           python3 scripts/smoke.py
+          python3 scripts/check_wikipedia.py
           printf '### Demo verified\n\nURL: %s\n\nCommit: `%s`\n' "$POC_URL" "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+      - name: Sample search latency during live ingestion
+        env:
+          BENCHMARK_OUTPUT: ${{ runner.temp }}/search-benchmark.json
+        run: |
+          if [ -n "$DEMO_DOMAIN" ]; then
+            export POC_URL="https://$DEMO_DOMAIN"
+          else
+            export POC_URL="http://$SSH_HOST"
+          fi
+          python3 scripts/benchmark.py
+      - name: Keep exploratory measurements
+        uses: actions/upload-artifact@v4
+        with:
+          name: search-benchmark
+          path: ${{ runner.temp }}/search-benchmark.json
       - name: Remove runner credentials
         if: always()
         run: rm -rf "$RUNNER_TEMP/poc-ssh"

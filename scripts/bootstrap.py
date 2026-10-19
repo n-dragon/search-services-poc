@@ -33,10 +33,10 @@ def main():
         print("Application deployed", deploy.status_code)
         base = os.getenv("VESPA_URL", "http://localhost:8080")
         for identifier, title, body, source in CARDS:
-            fields = {"card_id": identifier, "title": title, "body": body, "source": source}
+            fields = {"card_id": identifier, "title": title, "body": body, "source": source, "corpus": "systems-cards-fr-v2"}
             retry(lambda: client.post(f"{base}/document/v1/poc/card/docid/{identifier}", json={"fields": fields}).raise_for_status())
         def searchable():
-            result = client.get(base + "/search/", params={"yql": "select * from sources card where true", "hits": 0})
+            result = client.get(base + "/search/", params={"yql": 'select * from sources card where corpus contains "systems-cards-fr-v2"', "hits": 0})
             result.raise_for_status()
             payload = result.json()
             if payload.get("root", {}).get("errors") or payload.get("root", {}).get("fields", {}).get("totalCount") != len(CARDS):
