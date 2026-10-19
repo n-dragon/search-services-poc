@@ -113,7 +113,9 @@ def test_move_uses_page_id_and_updates_title(store):
     store.enqueue('Informatique')
     process(store, client_for(page(), []), store.next())
     store.enqueue('Informatique')
-    process(store, client_for({**page(43), 'title': 'Nouveau titre'}, []), store.next())
+    writes = []
+    process(store, client_for({**page(42), 'title': 'Nouveau titre'}, writes), store.next())
+    assert len(writes) == 1 and writes[0].method == 'POST'
     assert store.known('Nouveau titre')['page_id'] == 123
     assert store.known('Informatique') is None
     assert snapshot()['tracked'] == 1

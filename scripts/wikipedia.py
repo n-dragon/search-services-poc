@@ -242,7 +242,7 @@ def process(store, client, job):
               'corpus': 'wikipedia-fr', 'revision': str(page['lastrevid']),
               'indexed_at': str(int(time.time())), 'license': 'CC BY-SA 4.0',
               'history': f'https://fr.wikipedia.org/w/index.php?curid={identifier}&action=history'}
-    changed = not existing or not existing['active'] or existing['revision'] != page['lastrevid']
+    changed = not existing or not existing['active'] or existing['revision'] != page['lastrevid'] or existing['title'] != page['title']
     if not changed:
         indexed = client.get(path)
         if indexed.status_code == 404:
