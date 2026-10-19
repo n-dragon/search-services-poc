@@ -243,6 +243,13 @@ def process(store, client, job):
               'indexed_at': str(int(time.time())), 'license': 'CC BY-SA 4.0',
               'history': f'https://fr.wikipedia.org/w/index.php?curid={identifier}&action=history'}
     changed = not existing or not existing['active'] or existing['revision'] != page['lastrevid']
+    if not changed:
+        indexed = client.get(path)
+        if indexed.status_code == 404:
+            changed = True
+        else:
+            indexed.raise_for_status()
+            changed = indexed.json().get('fields', {}).get('revision') != str(page['lastrevid'])
     if changed:
         client.post(path, json={'fields': fields}).raise_for_status()
     store.complete(job, page, active=True, changed=changed)

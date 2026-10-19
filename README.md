@@ -72,6 +72,8 @@ Only add a live URL to an application after the real-backend smoke test passes r
 
 See [analytics access and data scope](docs/analytics.md). Use `?ref=mistral-search` on the candidature URL to distinguish campaign traffic. The dashboard is reached through an SSH tunnel, not through the public site. Counts do not identify individual visitors.
 
+See [Vespa configuration and measurement protocol](docs/vespa.md) for field storage, ranking profiles and resource limits.
+
 ## Architecture and trade-offs
 
 ```mermaid

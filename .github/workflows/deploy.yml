@@ -68,11 +68,6 @@ jobs:
             export POC_URL="http://$SSH_HOST"
           fi
           python3 scripts/benchmark.py
-      - name: Keep exploratory measurements
-        uses: actions/upload-artifact@v4
-        with:
-          name: search-benchmark
-          path: ${{ runner.temp }}/search-benchmark.json
       - name: Remove runner credentials
         if: always()
         run: rm -rf "$RUNNER_TEMP/poc-ssh"

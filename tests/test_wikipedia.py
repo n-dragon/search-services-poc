@@ -17,6 +17,8 @@ def client_for(page, writes, fail=False):
         if request.url.host == 'fr.wikipedia.org':
             assert request.url.params['exintro'] == '1'
             return httpx.Response(200, json={'query': {'pages': [page]}})
+        if request.method == 'GET':
+            return httpx.Response(200, json={'fields': {'revision': str(page.get('lastrevid', 0))}})
         writes.append(request)
         return httpx.Response(503 if fail else 200, json={})
     return httpx.Client(transport=httpx.MockTransport(handle))
@@ -145,3 +147,19 @@ def test_reconciliation_and_public_snapshot(store):
     assert state['pending'] == 1
     assert state['recent'][0]['title'] == 'Informatique'
     assert 'checkpoint' not in state
+
+
+def test_reconciliation_restores_document_lost_from_vespa(store):
+    store.enqueue('Informatique')
+    process(store, client_for(page(), []), store.next())
+    store.enqueue('Informatique')
+    writes = []
+    def handle(request):
+        if request.url.host == 'fr.wikipedia.org':
+            return httpx.Response(200, json={'query': {'pages': [page()]}})
+        if request.method == 'GET':
+            return httpx.Response(404)
+        writes.append(request)
+        return httpx.Response(200, json={})
+    process(store, httpx.Client(transport=httpx.MockTransport(handle)), store.next())
+    assert len(writes) == 1 and writes[0].method == 'POST'

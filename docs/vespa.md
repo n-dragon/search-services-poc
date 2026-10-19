@@ -47,7 +47,7 @@ POC_URL=http://localhost:8000 BENCHMARK_OUTPUT=/tmp/search-benchmark.json python
 
 Le script exécute 40 recherches par combinaison de profil et concurrence (1 et 4), après un appel d’échauffement. Il publie p50/p95/p99 des réponses réussies, erreurs, débit de requêtes terminées et nombre d’écritures d’ingestion pendant l’échantillon. Les durées incluent le réseau. Avec 40 points, p99 est proche du maximum. Les configurations passent successivement sur un corpus vivant : ces mesures ne prouvent ni supériorité d’un profil ni capacité maximale.
 
-Le workflow de déploiement conserve le JSON en artifact `search-benchmark` et dans son résumé. Une variation doit être confirmée par une expérience plus longue sur un instantané et des ressources mesurées avant de guider un réglage.
+Le workflow de déploiement conserve le JSON dans son résumé. Une variation doit être confirmée par une expérience plus longue sur un instantané et des ressources mesurées avant de guider un réglage.
 
 ## Références
 
