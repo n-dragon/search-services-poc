@@ -1,0 +1,14 @@
+# Small-corpus profile for a 4 GB VM. Not a large-corpus sizing recommendation.
+services:
+  vespa:
+    mem_limit: 2560m
+    cpus: 2
+  web:
+    mem_limit: 384m
+    cpus: 1
+  bootstrap:
+    mem_limit: 256m
+    cpus: 1
+  proxy:
+    mem_limit: 128m
+    cpus: 0.5

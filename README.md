@@ -58,6 +58,8 @@ These tests use a mocked Vespa HTTP transport and the actual MCP SDK server. The
 
 ## Online deployment
 
+For the Ubuntu 4 GB VM, use the manual **Deploy demo VM** GitHub Actions workflow and follow [the SSH/secrets setup guide](docs/github-actions-deployment.md). It supports IP-only HTTP initially and domain HTTPS when configured. Deployment is gated on the reusable verification workflow, including the small-memory integration test.
+
 See [deployment guide](docs/deployment.md). The intended deployment is a VM running the Compose stack behind Caddy HTTPS. GitHub Pages cannot run this Python/Vespa backend.
 
 Only add a live URL to an application after the real-backend smoke test passes remotely. Record the date and commit tested. No benchmark numbers are claimed in this repository.

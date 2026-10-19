@@ -1,0 +1,13 @@
+services:
+  web:
+    environment:
+      MCP_ALLOWED_HOSTS: ${DEMO_HOST:?Set DEMO_HOST},${DEMO_HOST}:80
+      MCP_ALLOWED_ORIGINS: http://${DEMO_HOST}
+  proxy:
+    image: caddy:2
+    command: ["caddy", "reverse-proxy", "--from", ":80", "--to", "web:8000"]
+    ports:
+      - '80:80'
+    depends_on:
+      - web
+    restart: unless-stopped

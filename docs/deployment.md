@@ -1,5 +1,7 @@
 # Deploy a candidate demo
 
+For the supplied Ubuntu VM (4 GB), use [GitHub Actions deployment](github-actions-deployment.md), which applies the small-corpus memory profile. The manual HTTPS instructions below describe the general deployment.
+
 ## Prerequisites
 
 - A Linux VM with Docker Engine and the Compose plugin, starting with at least 6 GB RAM and 20 GB free disk. Measure actual resource use before extending the corpus.
@@ -7,7 +9,7 @@
 - Inbound 80/443 for Caddy certificate issuance and HTTPS. Restrict SSH to your administrative access.
 - No external ports for Vespa, its configuration service, or document ingestion.
 
-The user previously mentioned an available VM; its address, OS and access have not been supplied for this project. No host has been changed and no paid resource has been provisioned.
+An Ubuntu VM with 4 GB RAM has been supplied. SSH access still needs configuration. No host has been changed and no paid resource has been provisioned.
 
 ## Steps
 

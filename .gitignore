@@ -4,3 +4,8 @@ __pycache__/
 *.pyc
 .env
 results/*.json
+
+.deploy.env
+.deploy.lock
+.deployed-commit
+source.tar.gz
