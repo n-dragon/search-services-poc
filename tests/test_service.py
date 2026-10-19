@@ -89,3 +89,15 @@ def test_mcp_initialize_list_and_search(client):
     assert json.loads(result['content'][0]['text'])['hits'][0]['id'] == 'index'
     invalid = rpc(4, 'tools/call', {'name': 'search_documents', 'arguments': {'query': 'index', 'limit': 100}})['result']
     assert invalid.get('isError')
+
+
+def test_public_events_and_admin_isolation(client, monkeypatch, tmp_path):
+    from app.analytics import summary
+    monkeypatch.setenv('ANALYTICS_DB', str(tmp_path / 'traffic.sqlite3'))
+    response = client.post('/api/events', json={'event':'view','page':'architecture','campaign':'mistral-search'})
+    assert response.status_code == 204
+    assert response.content == b''
+    assert summary()['totals']['view'] == 1
+    assert client.get('/api/summary').status_code == 404
+    assert client.get('/admin').status_code == 404
+    assert client.post('/api/events',json={'event':'view','page':'search','ip':'1.2.3.4'}).status_code == 422

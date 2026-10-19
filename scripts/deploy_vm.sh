@@ -37,7 +37,8 @@ COMPOSE_PARALLEL_LIMIT=1 "${compose[@]}" build
 # Re-run bootstrap on every release without deleting its data or other services.
 "${compose[@]}" up -d vespa
 "${compose[@]}" up -d --force-recreate bootstrap
-"${compose[@]}" up -d web proxy
+"${compose[@]}" up -d web proxy analytics
+python3 scripts/check_analytics.py
 python3 scripts/smoke.py
 "${compose[@]}" ps
 docker stats --no-stream "$("${compose[@]}" ps -q vespa)" "$("${compose[@]}" ps -q web)"

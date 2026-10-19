@@ -22,6 +22,8 @@ services:
     restart: "no"
   web:
     build: .
+    volumes:
+      - analytics-data:/data
     ports:
       - "127.0.0.1:8000:8000"
     environment:
@@ -30,5 +32,14 @@ services:
       bootstrap:
         condition: service_completed_successfully
     restart: unless-stopped
+  analytics:
+    build: .
+    command: ["python", "-m", "uvicorn", "app.analytics:admin", "--host", "0.0.0.0", "--port", "8001", "--no-access-log"]
+    ports:
+      - "127.0.0.1:8001:8001"
+    volumes:
+      - analytics-data:/data
+    restart: unless-stopped
 volumes:
+  analytics-data:
   vespa-data:

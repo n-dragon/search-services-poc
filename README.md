@@ -4,7 +4,7 @@ A focused POC of search infrastructure exposed as tools for agents: **Vespa BM25
 
 [![Verify POC](https://github.com/n-dragon/search-services-poc/actions/workflows/ci.yml/badge.svg)](https://github.com/n-dragon/search-services-poc/actions/workflows/ci.yml)
 
-**Status:** published on GitHub; not deployed. No live URL exists yet. This project is independent and is not affiliated with Mistral AI.
+**Status:** first deployment verified on the demo VM. Public HTTP endpoint: http://51.195.137.119 . Updated releases must pass remote checks before being used in a candidature. This project is independent and is not affiliated with Mistral AI.
 
 ## What works in this first version
 
@@ -14,6 +14,9 @@ A focused POC of search infrastructure exposed as tools for agents: **Vespa BM25
 - Stable ingestion identifiers and replay-safe replacement writes.
 - Bounded search concurrency, bounded query size/results and backend timeouts.
 - Separate liveness/readiness endpoints; request/error/duration counters.
+- Search playground with query examples, BM25 scores and inspectable source documents.
+- Interactive architecture walkthrough for HTTP, MCP and ingestion paths.
+- Private aggregate analytics dashboard, isolated on VM loopback with 30-day retention.
 - Web UI and containerized bootstrap.
 - Unit/API/MCP transport checks and a CI job designed to run against real Vespa.
 
@@ -63,6 +66,10 @@ For the Ubuntu 4 GB VM, use the manual **Deploy demo VM** GitHub Actions workflo
 See [deployment guide](docs/deployment.md). The intended deployment is a VM running the Compose stack behind Caddy HTTPS. GitHub Pages cannot run this Python/Vespa backend.
 
 Only add a live URL to an application after the real-backend smoke test passes remotely. Record the date and commit tested. No benchmark numbers are claimed in this repository.
+
+## Private analytics
+
+See [analytics access and data scope](docs/analytics.md). Use `?ref=mistral-search` on the candidature URL to distinguish campaign traffic. The dashboard is reached through an SSH tunnel, not through the public site. Counts do not identify individual visitors.
 
 ## Architecture and trade-offs
 

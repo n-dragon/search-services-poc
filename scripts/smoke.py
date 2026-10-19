@@ -3,6 +3,7 @@ import json
 import os
 import time
 import urllib.request
+import urllib.error
 BASE = os.getenv('POC_URL', 'http://localhost:8000').rstrip('/')
 
 
@@ -19,6 +20,15 @@ def main():
         except (OSError, AssertionError):
             if attempt == 119: raise
             time.sleep(2)
+    with urllib.request.urlopen(BASE + "/", timeout=10) as response:
+        page = response.read().decode()
+    assert 'id="architecture-page"' in page and 'id="search-form"' in page
+    try:
+        get("/api/summary")
+    except urllib.error.HTTPError as error:
+        assert error.code == 404
+    else:
+        raise AssertionError("Private analytics API must not be mounted on the public app")
     result = get('/api/search?q=replication')
     assert result['hits'] and result['hits'][0]['id'] == 'replication', result
     assert get('/api/documents/replication')['corpus_version'] == 'systems-cards-v1'

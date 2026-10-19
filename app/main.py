@@ -4,6 +4,7 @@ from pathlib import Path
 import threading
 import os
 import time
+import sqlite3
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from mcp.server.fastmcp import FastMCP
@@ -11,6 +12,7 @@ from mcp.server.transport_security import TransportSecuritySettings
 from pydantic import Field
 from typing import Annotated
 from app.backend import VespaBackend, SearchUnavailable, CORPUS_VERSION
+from app.analytics import Event, record
 
 backend = VespaBackend()
 mcp = FastMCP("Search Services POC", stateless_http=True, json_response=True,
@@ -78,6 +80,14 @@ async def unavailable(request: Request, exc):
 @app.get("/", response_class=HTMLResponse)
 def home():
     return Path(__file__).with_name("index.html").read_text()
+
+
+@app.post("/api/events", status_code=204, include_in_schema=False)
+def analytics_event(event: Event):
+    try:
+        record(event)
+    except (sqlite3.Error, OSError):
+        raise HTTPException(503, "Analytics temporarily unavailable")
 
 
 @app.get("/healthz")
