@@ -1,6 +1,11 @@
 # Small-corpus profile for a 4 GB VM. Not a large-corpus sizing recommendation.
 services:
   vespa:
+    # Development-only override of the image startup check. Keep the hard cgroup limit.
+    environment:
+      VESPA_IGNORE_NOT_ENOUGH_MEMORY: "true"
+      VESPA_CONFIGSERVER_JVMARGS: "-Xms32m -Xmx256m"
+      VESPA_CONFIGPROXY_JVMARGS: "-Xms32m -Xmx64m"
     mem_limit: 2560m
     cpus: 2
   web:

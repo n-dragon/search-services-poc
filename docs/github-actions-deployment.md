@@ -20,7 +20,7 @@ S’il manque Docker, suivre l’installation officielle Ubuntu : https://docs.d
 sudo usermod -aG docker "$USER"
 ```
 
-Prévoir 20 Go de disque disponible pour images, builds et données. Le profil limite Vespa à 2560 Mio, l’API à 384 Mio, le bootstrap à 256 Mio et Caddy à 128 Mio. Ce budget doit être validé sur la VM ; le script refuse un premier déploiement avec moins de 2800 Mio disponibles. Il ne crée pas de swap et ne modifie pas les services existants. Ne pas utiliser ce profil pour un gros corpus.
+Prévoir 20 Go de disque disponible pour images, builds et données. Le profil limite Vespa à 2560 Mio, l’API à 384 Mio, le bootstrap à 256 Mio et Caddy à 128 Mio. L’image Vespa exige normalement au moins 4 Go pour son conteneur seul. Le profil utilise explicitement `VESPA_IGNORE_NOT_ENOUGH_MEMORY=true` pour ce minuscule POC, sous limite mémoire stricte : c’est un mode expérimental, pas une configuration de production. Ce budget doit être validé sur la VM ; le script refuse un premier déploiement avec moins de 2800 Mio disponibles. Il ne crée pas de swap et ne modifie pas les services existants. Ne pas utiliser ce profil pour un gros corpus.
 
 Autoriser le port SSH utilisé et le port TCP 80 dans le pare-feu réseau de la VM. Ajouter TCP 443 si un domaine est configuré. Ne pas exposer les ports Vespa 8080/19071 ni le port API 8000.
 
