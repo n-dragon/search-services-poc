@@ -28,7 +28,7 @@ def client(monkeypatch):
 def test_search_provenance(client):
     result = client.get('/api/search', params={'q': 'index'}).json()
     assert result['backend'] == 'vespa'
-    assert result['corpus_version'] == 'systems-cards-v1'
+    assert result['corpus_version'] == 'systems-cards-fr-v2'
     assert result['hits'][0]['id'] == 'index'
     assert result['hits'][0]['source'].startswith('https://')
 

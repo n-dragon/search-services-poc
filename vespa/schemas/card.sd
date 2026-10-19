@@ -1,5 +1,6 @@
 schema card {
   document card {
+    field language type string { indexing: "fr" | set_language }
     field card_id type string { indexing: summary | attribute }
     field title type string { indexing: summary | index
       index: enable-bm25 }

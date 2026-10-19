@@ -2,6 +2,7 @@
 import json
 import os
 import time
+import urllib.parse
 import urllib.request
 import urllib.error
 BASE = os.getenv('POC_URL', 'http://localhost:8000').rstrip('/')
@@ -29,9 +30,12 @@ def main():
         assert error.code == 404
     else:
         raise AssertionError("Private analytics API must not be mounted on the public app")
-    result = get('/api/search?q=replication')
+    assert 'lang="fr"' in page
+    result = get("/api/search?" + urllib.parse.urlencode({"q": "réplication"}))
     assert result['hits'] and result['hits'][0]['id'] == 'replication', result
-    assert get('/api/documents/replication')['corpus_version'] == 'systems-cards-v1'
+    document = get('/api/documents/replication')
+    assert document['corpus_version'] == 'systems-cards-fr-v2'
+    assert document['title'].startswith('Réplication')
     for method, params in [('initialize', {'protocolVersion': '2025-03-26', 'capabilities': {}, 'clientInfo': {'name': 'smoke', 'version': '1'}}), ('tools/list', {})]:
         body = json.dumps({'jsonrpc': '2.0', 'id': 1, 'method': method, 'params': params}).encode()
         request = urllib.request.Request(BASE + '/tools/mcp', data=body,

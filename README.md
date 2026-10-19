@@ -10,12 +10,12 @@ A focused POC of search infrastructure exposed as tools for agents: **Vespa BM25
 
 - Real Vespa lexical retrieval, no simulated fallback.
 - Read-only HTTP API and MCP tools: `search_documents`, `get_document`.
-- Original, versioned ten-document educational corpus with source references.
+- Original, versioned ten-document French educational corpus with source references (`systems-cards-fr-v2`), with explicit French language processing at indexing and query time.
 - Stable ingestion identifiers and replay-safe replacement writes.
 - Bounded search concurrency, bounded query size/results and backend timeouts.
 - Separate liveness/readiness endpoints; request/error/duration counters.
 - Search playground with query examples, BM25 scores and inspectable source documents.
-- Interactive architecture walkthrough for HTTP, MCP and ingestion paths.
+- French interface and interactive architecture walkthrough for HTTP, MCP and ingestion paths, with eight detailed engineering decisions and their trade-offs.
 - Private aggregate analytics dashboard, isolated on VM loopback with 30-day retention.
 - Web UI and containerized bootstrap.
 - Unit/API/MCP transport checks and a CI job designed to run against real Vespa.

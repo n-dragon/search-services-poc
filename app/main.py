@@ -69,7 +69,7 @@ async def lifespan(app):
     backend.client.close()
 
 
-app = FastAPI(title="Search Services POC", lifespan=lifespan)
+app = FastAPI(title="Laboratoire de recherche", description="API de recherche lexicale et de consultation des fiches pédagogiques.", lifespan=lifespan)
 
 
 @app.exception_handler(SearchUnavailable)

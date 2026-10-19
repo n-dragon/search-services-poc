@@ -3,7 +3,7 @@ import os
 import re
 import httpx
 
-CORPUS_VERSION = "systems-cards-v1"
+CORPUS_VERSION = "systems-cards-fr-v2"
 
 class SearchUnavailable(Exception):
     pass
@@ -34,7 +34,7 @@ class VespaBackend:
             raise ValueError("query must have 1–256 characters; limit must be 1–10")
         data = self._request("/search/", {
             "yql": "select * from sources card where userInput(@query)",
-            "query": query, "type": "any", "ranking": "lexical",
+            "query": query, "type": "any", "ranking": "lexical", "language": "fr",
             "hits": limit, "timeout": "2s",
         })
         hits = [{"id": h["fields"]["card_id"], "title": h["fields"]["title"],
