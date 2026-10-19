@@ -1,0 +1,22 @@
+services:
+  web:
+    environment:
+      MCP_ALLOWED_HOSTS: ${DEMO_DOMAIN:?Set DEMO_DOMAIN},${DEMO_DOMAIN}:443
+      MCP_ALLOWED_ORIGINS: https://${DEMO_DOMAIN}
+  proxy:
+    image: caddy:2
+    environment:
+      DEMO_DOMAIN: ${DEMO_DOMAIN:?Set DEMO_DOMAIN}
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - web
+    restart: unless-stopped
+volumes:
+  caddy-data:
+  caddy-config:

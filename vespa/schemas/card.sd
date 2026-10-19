@@ -1,0 +1,14 @@
+schema card {
+  document card {
+    field card_id type string { indexing: summary | attribute }
+    field title type string { indexing: summary | index
+      index: enable-bm25 }
+    field body type string { indexing: summary | index
+      index: enable-bm25 }
+    field source type string { indexing: summary }
+  }
+  fieldset default { fields: title, body }
+  rank-profile lexical {
+    first-phase { expression: 2 * bm25(title) + bm25(body) }
+  }
+}

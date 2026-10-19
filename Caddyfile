@@ -1,0 +1,6 @@
+{$DEMO_DOMAIN} {
+    encode gzip
+    header X-Content-Type-Options nosniff
+    header Referrer-Policy no-referrer
+    reverse_proxy web:8000
+}

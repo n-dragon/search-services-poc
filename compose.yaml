@@ -1,0 +1,34 @@
+services:
+  vespa:
+    image: vespaengine/vespa:8
+    hostname: vespa
+    volumes:
+      - vespa-data:/opt/vespa/var
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:19071/state/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+    restart: unless-stopped
+  bootstrap:
+    build: .
+    command: ["python", "-m", "scripts.bootstrap"]
+    environment:
+      VESPA_URL: http://vespa:8080
+      VESPA_CONFIG_URL: http://vespa:19071
+    depends_on:
+      vespa:
+        condition: service_healthy
+    restart: "no"
+  web:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      VESPA_URL: http://vespa:8080
+    depends_on:
+      bootstrap:
+        condition: service_completed_successfully
+    restart: unless-stopped
+volumes:
+  vespa-data:

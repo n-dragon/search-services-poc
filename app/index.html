@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Search Services Lab</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#172b3a;background:#f4f6f8}body{max-width:980px;margin:60px auto;padding:24px}h1{font-size:clamp(32px,6vw,58px);letter-spacing:-2px;margin:18px 0}p{line-height:1.7;color:#526274}.tag{font-size:12px;letter-spacing:2px;color:#007b77;font-weight:700}form{display:flex;gap:10px;margin:30px 0}input{flex:1;min-width:0;padding:17px;border:1px solid #bccbd3;border-radius:9px;font-size:16px}button{background:#007b77;color:white;border:0;border-radius:9px;padding:15px 22px;cursor:pointer}.card{padding:24px;background:white;border:1px solid #dfe6ea;border-radius:12px;margin:14px 0}.card h2{margin:0 0 8px;font-size:21px}a{color:#007b77}#status{min-height:26px}footer{border-top:1px solid #dfe6ea;padding-top:24px;margin-top:40px;font-size:14px}code{background:#e6edef;padding:3px 6px;border-radius:4px}
+</style>
+<div class="tag">INFORMATION RETRIEVAL · DATA SYSTEMS · AGENT TOOLS</div>
+<h1>Search Services Lab</h1>
+<p>A small, inspectable search platform. Real Vespa BM25 retrieval, versioned source documents, and the same search exposed through MCP. Start with <b>replication</b>, <b>index</b>, or <b>backpressure</b>.</p>
+<form id="form"><input id="q" aria-label="Search query" placeholder="Search the systems corpus…" maxlength="256" required><button>Search</button></form>
+<div id="status" role="status" aria-live="polite"></div><main id="results"></main>
+<footer><b>Scope:</b> single-node POC · original educational corpus · lexical retrieval. No vector search or benchmark claims yet.<p>Explore <a href="/docs">HTTP API</a> · <a href="/readyz">Readiness</a> · <a href="/metrics">Metrics</a> · MCP endpoint: <code>/tools/mcp</code></p></footer>
+<script>
+const form=document.querySelector('#form'),status=document.querySelector('#status'),results=document.querySelector('#results');
+form.addEventListener('submit',async e=>{e.preventDefault();const button=form.querySelector('button');button.disabled=true;results.replaceChildren();status.textContent='Searching Vespa…';const start=performance.now();try{const r=await fetch('/api/search?'+new URLSearchParams({q:document.querySelector('#q').value,limit:'5'}));const data=await r.json();if(!r.ok)throw Error(typeof data.detail==='string'?data.detail:'Request failed');status.textContent=`${data.total} matches · ${Math.round(performance.now()-start)} ms client round trip · ${data.backend} / ${data.ranking} · ${data.corpus_version}`;for(const hit of data.hits){const card=document.createElement('article');card.className='card';const title=document.createElement('h2');title.textContent=hit.title;const body=document.createElement('p');body.textContent=hit.body;const source=document.createElement('a');source.textContent='Source reference ↗';const url=new URL(hit.source);if(url.protocol==='https:'){source.href=url.href;source.rel='noopener noreferrer';source.target='_blank'}card.append(title,body,source);results.append(card)}}catch(err){status.textContent=err.message}finally{button.disabled=false}});
+</script></html>
