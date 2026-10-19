@@ -4,13 +4,16 @@
 
 - Source implemented for lexical search, API, UI and official MCP SDK.
 - API/MCP tests run locally against mocked Vespa transport; see the test report delivered with this source.
-- Real Vespa startup, schema deployment, ingestion and ranking have not been executed in the authoring environment (Docker/Podman unavailable).
-- GitHub repository publication, Actions result and online instance remain pending.
+- Real Vespa startup, schema deployment, ingestion, a BM25 query, document provenance and MCP discovery passed in GitHub Actions on commit `f013e39cbf765a4f6145812856ab83a8cf9ccfb1` (19 October 2026).
+- GitHub repository published: https://github.com/n-dragon/search-services-poc
+- GitHub Actions API/MCP test job passed on the initial implementation commit.
+- Both CI jobs passed: https://github.com/n-dragon/search-services-poc/actions/runs/39252822478
+- Online instance remains pending.
 
 ## Release checklist
 
-- [ ] GitHub repository created and source pushed
-- [ ] Both CI jobs green on the published commit
+- [x] GitHub repository created and source pushed
+- [x] Both CI jobs green on the initial implementation commit
 - [ ] HTTPS instance running on a stable domain
 - [ ] Remote smoke test and manual UI review complete
 - [ ] Real MCP client tested remotely

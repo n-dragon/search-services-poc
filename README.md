@@ -2,7 +2,9 @@
 
 A focused POC of search infrastructure exposed as tools for agents: **Vespa BM25 + Python API + official MCP SDK + web demo**.
 
-**Status:** source prepared; not deployed. No live URL exists yet. This project is independent and is not affiliated with Mistral AI.
+[![Verify POC](https://github.com/n-dragon/search-services-poc/actions/workflows/ci.yml/badge.svg)](https://github.com/n-dragon/search-services-poc/actions/workflows/ci.yml)
+
+**Status:** published on GitHub; not deployed. No live URL exists yet. This project is independent and is not affiliated with Mistral AI.
 
 ## What works in this first version
 
