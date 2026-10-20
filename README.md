@@ -118,3 +118,7 @@ See [candidate evidence checklist](docs/candidate-evidence.md) for what to show 
 ### Sources scientifiques et statistiques
 
 Le profil `live` ajoute des échantillons quotidiens Wikidata, UniProt, OpenAlex, OpenAIRE, Eurostat, Banque mondiale, FMI, OCDE et data.gouv.fr. Le connecteur Materials Project attend `MP_API_KEY`. La page expose filtres, provenance structurée et suivi par source. Voir [périmètres, reprise et clés API](docs/structured-sources.md) ; ces échantillons ne sont pas des miroirs complets.
+
+### Laboratoire YQL et SPARQL
+
+`/lab` présente sept scénarios exécutés réellement, leurs requêtes et paramètres, les résultats et la provenance. YQL interroge Vespa ; SPARQL utilise un petit instantané Wikidata local versionné. Les outils MCP `query_index` et `query_graph` appliquent les mêmes modèles et limites que HTTP. Voir [le contrat d’admission et ses limites](docs/query-lab.md).

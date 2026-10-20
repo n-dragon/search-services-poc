@@ -51,7 +51,7 @@ def main():
             data = json.load(response)
         assert 'result' in data, data
         if method == 'tools/list':
-            assert {tool['name'] for tool in data['result']['tools']} == {'search_documents', 'get_document'}
+            assert {tool['name'] for tool in data['result']['tools']} == {'search_documents', 'get_document', 'query_index', 'query_graph'}
     print('PASS: real Vespa search, document provenance and MCP discovery')
 
 

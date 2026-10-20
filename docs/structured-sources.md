@@ -1,6 +1,6 @@
 # Sources structurées sur la VM de démonstration
 
-Le POC héberge dans Vespa des **échantillons**, pas des copies intégrales de ces bases. Le worker `scripts/structured_sources.py` relit chaque échantillon 24 heures après sa dernière synchronisation réussie. Il n’offre ni couverture exhaustive, ni service RDF/SPARQL, ni garantie de fraîcheur.
+Le POC héberge dans Vespa des **échantillons**, pas des copies intégrales de ces bases. Le worker `scripts/structured_sources.py` relit chaque échantillon 24 heures après sa dernière synchronisation réussie. Il n’offre ni couverture exhaustive ni garantie de fraîcheur. Le [laboratoire SPARQL](query-lab.md) utilise un petit instantané RDF distinct, versionné dans le dépôt.
 
 | Source | Périmètre |
 | --- | --- |

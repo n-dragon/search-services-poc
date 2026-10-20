@@ -83,7 +83,7 @@ def test_mcp_initialize_list_and_search(client):
         return response.json()
     initialized = rpc(1, 'initialize', {'protocolVersion': '2025-03-26', 'capabilities': {}, 'clientInfo': {'name': 'test', 'version': '1'}})
     assert initialized['result']['serverInfo']['name'] == 'Search Services POC'
-    assert {t['name'] for t in rpc(2, 'tools/list', {})['result']['tools']} == {'search_documents', 'get_document'}
+    assert {t['name'] for t in rpc(2, 'tools/list', {})['result']['tools']} == {'search_documents', 'get_document', 'query_index', 'query_graph'}
     result = rpc(3, 'tools/call', {'name': 'search_documents', 'arguments': {'query': 'index', 'limit': 1}})['result']
     assert not result.get('isError', False)
     assert json.loads(result['content'][0]['text'])['hits'][0]['id'] == 'index'

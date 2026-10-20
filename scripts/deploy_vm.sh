@@ -45,6 +45,7 @@ COMPOSE_PARALLEL_LIMIT=1 "${compose[@]}" build
 "${compose[@]}" up -d web proxy analytics wikipedia structured
 python3 scripts/check_analytics.py
 python3 scripts/smoke.py
+python3 scripts/check_lab.py
 python3 scripts/check_wikipedia.py
 python3 scripts/check_sources.py
 "${compose[@]}" ps

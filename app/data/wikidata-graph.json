@@ -1,0 +1,703 @@
+{
+  "source": "https://www.wikidata.org/",
+  "license": "CC0",
+  "collected_at": "2026-10-20T14:59:24.724917+00:00",
+  "scope": "Six racines informatiques et jusqu’à 36 voisins ; P31, P279, P361, huit valeurs au plus par propriété ; sans qualificateurs ni inférence.",
+  "roots": [
+    "Q11660",
+    "Q21198",
+    "Q539080",
+    "Q8366",
+    "Q2539",
+    "Q12453"
+  ],
+  "entities": [
+    {
+      "id": "Q11660",
+      "revision": 2558120581,
+      "labels": {
+        "en": "artificial intelligence",
+        "fr": "intelligence artificielle"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q112057532"
+        ],
+        [
+          "P31",
+          "Q123370638"
+        ],
+        [
+          "P31",
+          "Q125161275"
+        ],
+        [
+          "P279",
+          "Q21198"
+        ],
+        [
+          "P279",
+          "Q120208"
+        ],
+        [
+          "P279",
+          "Q1156402"
+        ],
+        [
+          "P361",
+          "Q21198"
+        ],
+        [
+          "P361",
+          "Q395"
+        ]
+      ]
+    },
+    {
+      "id": "Q21198",
+      "revision": 2554283095,
+      "labels": {
+        "fr": "informatique",
+        "en": "computer science"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q11862829"
+        ],
+        [
+          "P31",
+          "Q4671286"
+        ],
+        [
+          "P279",
+          "Q816264"
+        ]
+      ]
+    },
+    {
+      "id": "Q539080",
+      "revision": 2555459866,
+      "labels": {
+        "en": "Edmar Aparecida",
+        "fr": "Edmar Halovskyi de Lacerda"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q5"
+        ]
+      ]
+    },
+    {
+      "id": "Q8366",
+      "revision": 2557967149,
+      "labels": {
+        "fr": "algorithme",
+        "en": "algorithm"
+      },
+      "edges": [
+        [
+          "P279",
+          "Q386724"
+        ],
+        [
+          "P279",
+          "Q24034552"
+        ],
+        [
+          "P279",
+          "Q141177811"
+        ],
+        [
+          "P361",
+          "Q21198"
+        ],
+        [
+          "P361",
+          "Q13636890"
+        ],
+        [
+          "P361",
+          "Q395"
+        ]
+      ]
+    },
+    {
+      "id": "Q2539",
+      "revision": 2552564546,
+      "labels": {
+        "fr": "apprentissage automatique",
+        "en": "machine learning"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q11862829"
+        ],
+        [
+          "P31",
+          "Q1047113"
+        ],
+        [
+          "P31",
+          "Q2267705"
+        ],
+        [
+          "P31",
+          "Q130609847"
+        ],
+        [
+          "P31",
+          "Q123370638"
+        ],
+        [
+          "P279",
+          "Q11660"
+        ],
+        [
+          "P361",
+          "Q11660"
+        ],
+        [
+          "P361",
+          "Q395"
+        ]
+      ]
+    },
+    {
+      "id": "Q12453",
+      "revision": 2557992766,
+      "labels": {
+        "en": "measurement",
+        "fr": "mesurage"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q4671286"
+        ],
+        [
+          "P31",
+          "Q123345464"
+        ],
+        [
+          "P279",
+          "Q52948"
+        ],
+        [
+          "P279",
+          "Q141344358"
+        ],
+        [
+          "P361",
+          "Q394"
+        ]
+      ]
+    },
+    {
+      "id": "Q1047113",
+      "revision": 2553186940,
+      "labels": {
+        "fr": "spécialité",
+        "en": "field of study"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q110402867"
+        ],
+        [
+          "P279",
+          "Q105948247"
+        ],
+        [
+          "P279",
+          "Q110403031"
+        ],
+        [
+          "P279",
+          "Q26256810"
+        ],
+        [
+          "P279",
+          "Q21040055"
+        ],
+        [
+          "P361",
+          "Q9081"
+        ]
+      ]
+    },
+    {
+      "id": "Q112057532",
+      "revision": 2542124180,
+      "labels": {
+        "en": "type of technology",
+        "fr": "type de technologie"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q19478619"
+        ],
+        [
+          "P279",
+          "Q21146257"
+        ]
+      ]
+    },
+    {
+      "id": "Q1156402",
+      "revision": 2543691160,
+      "labels": {
+        "fr": "raisonnement",
+        "en": "reasoning"
+      },
+      "edges": [
+        [
+          "P279",
+          "Q7048977"
+        ],
+        [
+          "P279",
+          "Q9420"
+        ],
+        [
+          "P279",
+          "Q1799072"
+        ],
+        [
+          "P279",
+          "Q11398090"
+        ]
+      ]
+    },
+    {
+      "id": "Q11862829",
+      "revision": 2557628367,
+      "labels": {
+        "en": "academic discipline",
+        "fr": "discipline académique"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q110402867"
+        ],
+        [
+          "P279",
+          "Q1047113"
+        ]
+      ]
+    },
+    {
+      "id": "Q120208",
+      "revision": 2551324875,
+      "labels": {
+        "en": "emerging technology",
+        "fr": "nouvelles technologies"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q112057532"
+        ],
+        [
+          "P279",
+          "Q11016"
+        ]
+      ]
+    },
+    {
+      "id": "Q123345464",
+      "revision": 2551511463,
+      "labels": {
+        "en": "type of interaction",
+        "fr": "type d'interaction"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q19478619"
+        ],
+        [
+          "P31",
+          "Q24017414"
+        ],
+        [
+          "P279",
+          "Q116505632"
+        ]
+      ]
+    },
+    {
+      "id": "Q123370638",
+      "revision": 2551194511,
+      "labels": {
+        "en": "branch of computer science",
+        "fr": "branche de l'informatique"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q24017414"
+        ],
+        [
+          "P31",
+          "Q5962346"
+        ],
+        [
+          "P279",
+          "Q2465832"
+        ],
+        [
+          "P279",
+          "Q1047113"
+        ],
+        [
+          "P279",
+          "Q11862829"
+        ]
+      ]
+    },
+    {
+      "id": "Q125161275",
+      "revision": 2552317421,
+      "labels": {
+        "en": "type of intelligence",
+        "fr": "type d'intelligence"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q19478619"
+        ],
+        [
+          "P279",
+          "Q21146257"
+        ]
+      ]
+    },
+    {
+      "id": "Q130609847",
+      "revision": 2480896500,
+      "labels": {
+        "en": "learning approach"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q19478619"
+        ],
+        [
+          "P31",
+          "Q49094543"
+        ],
+        [
+          "P279",
+          "Q21146257"
+        ]
+      ]
+    },
+    {
+      "id": "Q13636890",
+      "revision": 2512698819,
+      "labels": {
+        "en": "algorithmics",
+        "fr": "algorithmique"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q2465832"
+        ],
+        [
+          "P361",
+          "Q2878974"
+        ],
+        [
+          "P361",
+          "Q844718"
+        ]
+      ]
+    },
+    {
+      "id": "Q141177811",
+      "revision": 2546659205,
+      "labels": {
+        "en": "directive information content entity"
+      },
+      "edges": [
+        [
+          "P279",
+          "Q141328123"
+        ]
+      ]
+    },
+    {
+      "id": "Q141344358",
+      "revision": 2557728342,
+      "labels": {
+        "en": "planned act"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q116505632"
+        ],
+        [
+          "P279",
+          "Q141336142"
+        ],
+        [
+          "P279",
+          "Q104637332"
+        ],
+        [
+          "P279",
+          "Q141751569"
+        ]
+      ]
+    },
+    {
+      "id": "Q2267705",
+      "revision": 2544362366,
+      "labels": {
+        "en": "field of study",
+        "fr": "discipline"
+      },
+      "edges": [
+        [
+          "P279",
+          "Q1047113"
+        ]
+      ]
+    },
+    {
+      "id": "Q24034552",
+      "revision": 2553269336,
+      "labels": {
+        "en": "mathematical concept",
+        "fr": "concept mathématique"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q23958852"
+        ],
+        [
+          "P31",
+          "Q137429456"
+        ],
+        [
+          "P279",
+          "Q151885"
+        ]
+      ]
+    },
+    {
+      "id": "Q386724",
+      "revision": 2559254760,
+      "labels": {
+        "fr": "œuvre",
+        "en": "work"
+      },
+      "edges": [
+        [
+          "P279",
+          "Q16686448"
+        ],
+        [
+          "P361",
+          "Q11042"
+        ],
+        [
+          "P361",
+          "Q336"
+        ],
+        [
+          "P361",
+          "Q2668072"
+        ],
+        [
+          "P361",
+          "Q735"
+        ]
+      ]
+    },
+    {
+      "id": "Q394",
+      "revision": 2554362201,
+      "labels": {
+        "fr": "métrologie",
+        "en": "metrology"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q11862829"
+        ],
+        [
+          "P31",
+          "Q2465832"
+        ],
+        [
+          "P31",
+          "Q4671286"
+        ],
+        [
+          "P279",
+          "Q14632398"
+        ]
+      ]
+    },
+    {
+      "id": "Q395",
+      "revision": 2559257013,
+      "labels": {
+        "fr": "mathématiques",
+        "en": "mathematics"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q11862829"
+        ],
+        [
+          "P31",
+          "Q4671286"
+        ],
+        [
+          "P279",
+          "Q7991"
+        ],
+        [
+          "P361",
+          "Q816264"
+        ],
+        [
+          "P361",
+          "Q475023"
+        ]
+      ]
+    },
+    {
+      "id": "Q4671286",
+      "revision": 2541824123,
+      "labels": {
+        "en": "academic major",
+        "fr": "principale spécialité d'étude"
+      },
+      "edges": [
+        [
+          "P279",
+          "Q11862829"
+        ]
+      ]
+    },
+    {
+      "id": "Q5",
+      "revision": 2559231496,
+      "labels": {
+        "en": "human",
+        "fr": "être humain"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q55983715"
+        ],
+        [
+          "P279",
+          "Q2250224"
+        ],
+        [
+          "P279",
+          "Q164509"
+        ],
+        [
+          "P279",
+          "Q154954"
+        ],
+        [
+          "P279",
+          "Q5891007"
+        ],
+        [
+          "P361",
+          "Q8425"
+        ],
+        [
+          "P361",
+          "Q1156970"
+        ],
+        [
+          "P361",
+          "Q42762"
+        ],
+        [
+          "P361",
+          "Q16334295"
+        ]
+      ]
+    },
+    {
+      "id": "Q52948",
+      "revision": 2556555775,
+      "labels": {
+        "en": "interaction",
+        "fr": "interaction"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q33104279"
+        ],
+        [
+          "P31",
+          "Q116505632"
+        ],
+        [
+          "P279",
+          "Q3249551"
+        ],
+        [
+          "P279",
+          "Q141641947"
+        ],
+        [
+          "P361",
+          "Q58778"
+        ],
+        [
+          "P361",
+          "Q930933"
+        ],
+        [
+          "P361",
+          "Q111931734"
+        ]
+      ]
+    },
+    {
+      "id": "Q816264",
+      "revision": 2551249191,
+      "labels": {
+        "fr": "science formelle",
+        "en": "formal science"
+      },
+      "edges": [
+        [
+          "P31",
+          "Q2465832"
+        ],
+        [
+          "P279",
+          "Q475023"
+        ]
+      ]
+    }
+  ]
+}
