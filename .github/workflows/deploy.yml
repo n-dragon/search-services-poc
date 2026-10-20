@@ -37,14 +37,20 @@ jobs:
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/poc-ssh/key"
           printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/poc-ssh/known_hosts"
           chmod 600 "$RUNNER_TEMP/poc-ssh/"*
+      - name: Prepare optional source API credentials
+        env:
+          MP_API_KEY: ${{ secrets.MP_API_KEY }}
+          OPENALEX_API_KEY: ${{ secrets.OPENALEX_API_KEY }}
+        run: python3 scripts/source_secrets.py
       - name: Transfer the verified commit and deploy
         run: |
           set -euo pipefail
           python3 scripts/deploy_config.py > .deploy.env
-          tar --exclude=.git --exclude=.deploy.env -czf "$RUNNER_TEMP/poc-source.tar.gz" .
+          tar --exclude=.git --exclude=.deploy.env --exclude=.source-secrets.env -czf "$RUNNER_TEMP/poc-source.tar.gz" .
           ssh_options=(-i "$RUNNER_TEMP/poc-ssh/key" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/poc-ssh/known_hosts" -o ConnectTimeout=15)
           ssh "${ssh_options[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" 'mkdir -p ~/search-services-poc'
           scp "${ssh_options[@]}" -P "$SSH_PORT" "$RUNNER_TEMP/poc-source.tar.gz" "$SSH_USER@$SSH_HOST:search-services-poc/source.tar.gz"
+          scp "${ssh_options[@]}" -P "$SSH_PORT" .source-secrets.env "$SSH_USER@$SSH_HOST:search-services-poc/.source-secrets.env"
           scp "${ssh_options[@]}" -P "$SSH_PORT" .deploy.env "$SSH_USER@$SSH_HOST:search-services-poc/.deploy.env"
           ssh "${ssh_options[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" 'cd ~/search-services-poc && tar -xzf source.tar.gz && bash scripts/deploy_vm.sh'
       - name: Verify the public endpoint from GitHub
@@ -57,6 +63,7 @@ jobs:
           fi
           python3 scripts/smoke.py
           python3 scripts/check_wikipedia.py
+          python3 scripts/check_sources.py
           printf '### Demo verified\n\nURL: %s\n\nCommit: `%s`\n' "$POC_URL" "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
       - name: Sample search latency during live ingestion
         env:
@@ -70,4 +77,4 @@ jobs:
           python3 scripts/benchmark.py
       - name: Remove runner credentials
         if: always()
-        run: rm -rf "$RUNNER_TEMP/poc-ssh"
+        run: rm -rf "$RUNNER_TEMP/poc-ssh" .source-secrets.env

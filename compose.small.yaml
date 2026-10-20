@@ -20,6 +20,9 @@ services:
   wikipedia:
     mem_limit: 128m
     cpus: 0.5
+  structured:
+    mem_limit: 128m
+    cpus: 0.5
   analytics:
     mem_limit: 128m
     cpus: 0.5

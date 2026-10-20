@@ -12,7 +12,7 @@ import urllib.parse
 import urllib.request
 
 PROFILES = ('lexical', 'lexical-balanced')
-FIELDS = {'card_id', 'title', 'body', 'source', 'corpus', 'revision', 'indexed_at', 'license', 'history'}
+FIELDS = {'card_id', 'title', 'body', 'source', 'corpus', 'revision', 'indexed_at', 'license', 'history', 'native_id', 'kind', 'structured_json', 'source_updated', 'fetched_at'}
 
 
 def canonical(value):
@@ -60,8 +60,8 @@ def normalize(documents):
             raise ValueError('Document text or provenance missing')
         ids.add(identifier)
         normalized.append({'id': identifier, 'fields': fields})
-    if not 1 <= len(normalized) <= 2500:
-        raise ValueError('Expected 1–2500 bounded documents')
+    if not 1 <= len(normalized) <= 3000:
+        raise ValueError('Expected 1–3000 bounded documents')
     return sorted(normalized, key=lambda d: d['id'])
 
 
@@ -75,7 +75,7 @@ def visit(base):
         if 'documents' not in data and 'documentCount' not in data:
             raise ValueError('Unexpected visit response')
         docs.extend(data.get('documents', []))
-        if len(docs) > 2500:
+        if len(docs) > 3000:
             raise ValueError('Snapshot exceeds POC bound')
         continuation = data.get('continuation')
         if not continuation:

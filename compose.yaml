@@ -30,6 +30,7 @@ services:
     environment:
       VESPA_URL: http://vespa:8080
       WIKIPEDIA_DB: /ingestion/wikipedia.sqlite3
+      SOURCES_DB: /ingestion/sources.sqlite3
     depends_on:
       bootstrap:
         condition: service_completed_successfully
@@ -42,6 +43,21 @@ services:
       VESPA_URL: http://vespa:8080
       WIKIPEDIA_DB: /data/wikipedia.sqlite3
       WIKIPEDIA_LIMIT: "2000"
+    volumes:
+      - wikipedia-data:/data
+    depends_on:
+      bootstrap:
+        condition: service_completed_successfully
+    restart: unless-stopped
+  structured:
+    profiles: [live]
+    build: .
+    command: ["python", "-m", "scripts.structured_sources"]
+    environment:
+      VESPA_URL: http://vespa:8080
+      SOURCES_DB: /data/sources.sqlite3
+      MP_API_KEY: ${MP_API_KEY:-}
+      OPENALEX_API_KEY: ${OPENALEX_API_KEY:-}
     volumes:
       - wikipedia-data:/data
     depends_on:

@@ -4,6 +4,11 @@ cd "$(dirname "$0")/.."
 set -a
 source .deploy.env
 set +a
+if [ -f .source-secrets.env ]; then
+  set -a
+  source .source-secrets.env
+  set +a
+fi
 command -v docker >/dev/null || { echo 'Install Docker Engine first; see docs/github-actions-deployment.md'; exit 1; }
 docker compose version
 command -v python3 >/dev/null || { echo 'Python 3 is required'; exit 1; }
@@ -37,10 +42,11 @@ COMPOSE_PARALLEL_LIMIT=1 "${compose[@]}" build
 # Re-run bootstrap on every release without deleting its data or other services.
 "${compose[@]}" up -d vespa
 "${compose[@]}" up -d --force-recreate bootstrap
-"${compose[@]}" up -d web proxy analytics wikipedia
+"${compose[@]}" up -d web proxy analytics wikipedia structured
 python3 scripts/check_analytics.py
 python3 scripts/smoke.py
 python3 scripts/check_wikipedia.py
+python3 scripts/check_sources.py
 "${compose[@]}" ps
 docker stats --no-stream "$("${compose[@]}" ps -q vespa)" "$("${compose[@]}" ps -q web)"
 printf '%s\n' "$DEPLOY_COMMIT" > .deployed-commit

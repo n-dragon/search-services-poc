@@ -12,6 +12,11 @@ schema card {
     field indexed_at type string { indexing: summary }
     field license type string { indexing: summary }
     field history type string { indexing: summary }
+    field native_id type string { indexing: summary }
+    field kind type string { indexing: summary }
+    field structured_json type string { indexing: summary }
+    field source_updated type string { indexing: summary }
+    field fetched_at type string { indexing: summary }
   }
   fieldset default { fields: title, body }
   # Explicit defaults: baseline parameters, not empirically optimized values.

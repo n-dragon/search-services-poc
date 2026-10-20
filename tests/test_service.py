@@ -28,7 +28,7 @@ def client(monkeypatch):
 def test_search_provenance(client):
     result = client.get('/api/search', params={'q': 'index'}).json()
     assert result['backend'] == 'vespa'
-    assert result['corpus_version'] == 'systems-and-wikipedia-fr-v3'
+    assert result['corpus_version'] == 'multi-source-fr-v4'
     assert result['hits'][0]['id'] == 'index'
     assert result['hits'][0]['source'].startswith('https://')
 
@@ -108,3 +108,18 @@ def test_allowed_ranking_profile(client):
     assert result.status_code == 200
     assert result.json()['ranking_profile'] == 'lexical-balanced'
     assert client.get('/api/search', params={'q': 'index', 'ranking': 'arbitrary'}).status_code == 422
+
+
+def test_source_filter_validation(client):
+    assert client.get('/api/search',params={'q':'PIB','source':'worldbank'}).json()['source_filter']=='worldbank'
+    assert client.get('/api/search',params={'q':'PIB','source':'arbitrary'}).status_code==422
+
+
+def test_source_bound_parameter():
+    def inspect(request):
+        assert request.url.params['yql'].endswith('and corpus contains @corpus')
+        assert request.url.params['corpus']=='worldbank'
+        return httpx.Response(200,json={'root':{}})
+    backend=VespaBackend(httpx.Client(base_url='http://vespa',transport=httpx.MockTransport(inspect)))
+    backend.search('PIB',source='worldbank')
+    with pytest.raises(ValueError):backend.search('PIB',source='" or true')

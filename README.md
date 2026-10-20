@@ -114,3 +114,7 @@ The Vespa and Caddy images currently use major-version tags. Resolve and pin tes
 - https://modelcontextprotocol.io/docs/learn/server-concepts
 
 See [candidate evidence checklist](docs/candidate-evidence.md) for what to show and what remains unverified.
+
+### Sources scientifiques et statistiques
+
+Le profil `live` ajoute des échantillons quotidiens Wikidata, UniProt, OpenAlex, OpenAIRE, Eurostat, Banque mondiale, FMI, OCDE et data.gouv.fr. Le connecteur Materials Project attend `MP_API_KEY`. La page expose filtres, provenance structurée et suivi par source. Voir [périmètres, reprise et clés API](docs/structured-sources.md) ; ces échantillons ne sont pas des miroirs complets.

@@ -14,6 +14,7 @@ from typing import Annotated, Literal
 from app.backend import VespaBackend, SearchUnavailable, CORPUS_VERSION
 from app.analytics import Event, record
 from app.ingestion import snapshot
+from app.sources import status as sources_status
 
 backend = VespaBackend()
 mcp = FastMCP("Search Services POC", stateless_http=True, json_response=True,
@@ -22,18 +23,19 @@ mcp = FastMCP("Search Services POC", stateless_http=True, json_response=True,
         allowed_hosts=["localhost", "127.0.0.1", "localhost:*", "127.0.0.1:*", *filter(None, os.getenv("MCP_ALLOWED_HOSTS", "").split(","))],
         allowed_origins=["http://localhost:*", *filter(None, os.getenv("MCP_ALLOWED_ORIGINS", "").split(","))],
     ))
+SourceFilter = Literal["all", "wikipedia-fr", "systems-cards-fr-v2", "wikidata", "uniprot", "materials", "openalex", "openaire", "eurostat", "worldbank", "imf", "oecd", "datagouv"]
 slots = threading.BoundedSemaphore(8)
 metrics_lock = threading.Lock()
 metrics = {"requests": 0, "errors": 0, "duration_seconds": 0.0}
 
 
-def bounded_search(query, limit, ranking="lexical"):
+def bounded_search(query, limit, ranking="lexical", source="all"):
     if not slots.acquire(blocking=False):
         raise SearchUnavailable("Search concurrency limit reached; retry later")
     start = time.perf_counter()
     failed = False
     try:
-        return backend.search(query, limit, ranking)
+        return backend.search(query, limit, ranking, source)
     except Exception:
         failed = True
         raise
@@ -50,9 +52,10 @@ def search_documents(
     query: Annotated[str, Field(min_length=1, max_length=256)],
     limit: Annotated[int, Field(ge=1, le=10)] = 5,
     ranking: Literal["lexical", "lexical-balanced"] = "lexical",
+    source: SourceFilter = "all",
 ) -> dict:
-    """Search systems cards and live French Wikipedia introductions using Vespa BM25."""
-    return bounded_search(query, limit, ranking)
+    """Search indexed cards, Wikipedia introductions and bounded structured sources with optional source filter."""
+    return bounded_search(query, limit, ranking, source)
 
 
 @mcp.tool()
@@ -108,12 +111,18 @@ def ingestion():
     return snapshot()
 
 
+@app.get("/api/sources")
+def sources():
+    return sources_status()
+
+
 @app.get("/api/search")
 def search(q: str = Query(min_length=1, max_length=256), limit: int = Query(default=5, ge=1, le=10),
-           ranking: Literal["lexical", "lexical-balanced"] = "lexical"):
+           ranking: Literal["lexical", "lexical-balanced"] = "lexical",
+           source: SourceFilter = "all"):
     if not q.strip():
         raise HTTPException(422, "Query cannot be blank")
-    return bounded_search(q, limit, ranking)
+    return bounded_search(q, limit, ranking, source)
 
 
 @app.get("/api/documents/{document_id}")

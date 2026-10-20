@@ -11,3 +11,5 @@ results/*.json
 source.tar.gz
 
 evaluation-artifacts/
+
+.source-secrets.env

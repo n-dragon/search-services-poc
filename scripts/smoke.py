@@ -41,7 +41,7 @@ def main():
         features = hit['features']
         assert math.isclose(hit['score'], weight*features['bm25(title)']+features['bm25(body)'], rel_tol=1e-5, abs_tol=1e-6), hit
     document = get('/api/documents/replication')
-    assert document['corpus_version'] == 'systems-and-wikipedia-fr-v3'
+    assert document['corpus_version'] == 'multi-source-fr-v4'
     assert document['title'].startswith('Réplication')
     for method, params in [('initialize', {'protocolVersion': '2025-03-26', 'capabilities': {}, 'clientInfo': {'name': 'smoke', 'version': '1'}}), ('tools/list', {})]:
         body = json.dumps({'jsonrpc': '2.0', 'id': 1, 'method': method, 'params': params}).encode()
