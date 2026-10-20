@@ -1,0 +1,322 @@
+[
+  {
+    "id": "q01-1",
+    "family": "replication",
+    "split": "dev",
+    "query": "réplication des bases de données",
+    "intent": "Comprendre la réplication des données et ses compromis de cohérence.",
+    "kind": "termes"
+  },
+  {
+    "id": "q01-2",
+    "family": "replication",
+    "split": "dev",
+    "query": "copier les données sur plusieurs serveurs avec des garanties de cohérence",
+    "intent": "Comprendre la réplication des données et ses compromis de cohérence.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q02-1",
+    "family": "index",
+    "split": "dev",
+    "query": "index inversé",
+    "intent": "Comprendre la structure d’un index inversé et la recherche de termes.",
+    "kind": "termes"
+  },
+  {
+    "id": "q02-2",
+    "family": "index",
+    "split": "dev",
+    "query": "retrouver rapidement les documents qui contiennent un mot",
+    "intent": "Comprendre la structure d’un index inversé et la recherche de termes.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q03-1",
+    "family": "overload",
+    "split": "dev",
+    "query": "backpressure saturation",
+    "intent": "Protéger un service contre une arrivée de travail supérieure à sa capacité.",
+    "kind": "termes"
+  },
+  {
+    "id": "q03-2",
+    "family": "overload",
+    "split": "dev",
+    "query": "éviter une file de requêtes sans limite quand le serveur est surchargé",
+    "intent": "Protéger un service contre une arrivée de travail supérieure à sa capacité.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q04-1",
+    "family": "checkpoint",
+    "split": "dev",
+    "query": "checkpoint reprise après panne",
+    "intent": "Reprendre un traitement interrompu sans recommencer toutes les données.",
+    "kind": "termes"
+  },
+  {
+    "id": "q04-2",
+    "family": "checkpoint",
+    "split": "dev",
+    "query": "reprendre un traitement interrompu depuis une progression enregistrée",
+    "intent": "Reprendre un traitement interrompu sans recommencer toutes les données.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q05-1",
+    "family": "latency",
+    "split": "dev",
+    "query": "latence p99",
+    "intent": "Comprendre la latence de queue et les percentiles.",
+    "kind": "termes"
+  },
+  {
+    "id": "q05-2",
+    "family": "latency",
+    "split": "dev",
+    "query": "pourquoi quelques requêtes sont beaucoup plus lentes que les autres",
+    "intent": "Comprendre la latence de queue et les percentiles.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q06-1",
+    "family": "mcp",
+    "split": "dev",
+    "query": "MCP outils agents",
+    "intent": "Exposer des outils de recherche à des agents via MCP.",
+    "kind": "termes"
+  },
+  {
+    "id": "q06-2",
+    "family": "mcp",
+    "split": "dev",
+    "query": "permettre à un assistant d’appeler un service de recherche",
+    "intent": "Exposer des outils de recherche à des agents via MCP.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q07-1",
+    "family": "hybrid",
+    "split": "dev",
+    "query": "recherche hybride BM25 vecteurs",
+    "intent": "Comprendre la combinaison de recherche lexicale et vectorielle.",
+    "kind": "termes"
+  },
+  {
+    "id": "q07-2",
+    "family": "hybrid",
+    "split": "dev",
+    "query": "combiner des mots clés et la similarité de sens pour retrouver un document",
+    "intent": "Comprendre la combinaison de recherche lexicale et vectorielle.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q08-1",
+    "family": "leakage",
+    "split": "dev",
+    "query": "fuite de données évaluation",
+    "intent": "Éviter la contamination entre entraînement et évaluation.",
+    "kind": "termes"
+  },
+  {
+    "id": "q08-2",
+    "family": "leakage",
+    "split": "dev",
+    "query": "éviter que les exemples de test soient déjà présents dans les données d’apprentissage",
+    "intent": "Éviter la contamination entre entraînement et évaluation.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q09-1",
+    "family": "reindex",
+    "split": "dev",
+    "query": "réindexation documents supprimés",
+    "intent": "Reconstruire un index et gérer les mises à jour et suppressions.",
+    "kind": "termes"
+  },
+  {
+    "id": "q09-2",
+    "family": "reindex",
+    "split": "dev",
+    "query": "reconstruire un moteur de recherche en conservant les changements survenus pendant le chargement",
+    "intent": "Reconstruire un index et gérer les mises à jour et suppressions.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q10-1",
+    "family": "nvme",
+    "split": "dev",
+    "query": "NVMe index recherche",
+    "intent": "Comprendre les compromis mémoire et stockage NVMe pour un moteur de recherche.",
+    "kind": "termes"
+  },
+  {
+    "id": "q10-2",
+    "family": "nvme",
+    "split": "dev",
+    "query": "stocker un gros index sur disque rapide quand il ne tient pas en mémoire",
+    "intent": "Comprendre les compromis mémoire et stockage NVMe pour un moteur de recherche.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q11-1",
+    "family": "computing",
+    "split": "dev",
+    "query": "informatique",
+    "intent": "Comprendre le domaine de l’informatique.",
+    "kind": "termes"
+  },
+  {
+    "id": "q11-2",
+    "family": "computing",
+    "split": "dev",
+    "query": "traitement automatique de l’information par des programmes",
+    "intent": "Comprendre le domaine de l’informatique.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q12-1",
+    "family": "database",
+    "split": "dev",
+    "query": "base de données SQL",
+    "intent": "Comprendre le rôle d’une base de données et le langage SQL.",
+    "kind": "termes"
+  },
+  {
+    "id": "q12-2",
+    "family": "database",
+    "split": "dev",
+    "query": "organiser des informations persistantes et les interroger",
+    "intent": "Comprendre le rôle d’une base de données et le langage SQL.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q13-1",
+    "family": "programming",
+    "split": "test",
+    "query": "Python langage de programmation",
+    "intent": "Comprendre les langages de programmation, en particulier Python.",
+    "kind": "termes"
+  },
+  {
+    "id": "q13-2",
+    "family": "programming",
+    "split": "test",
+    "query": "écrire des programmes avec un langage interprété généraliste",
+    "intent": "Comprendre les langages de programmation, en particulier Python.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q14-1",
+    "family": "operating-system",
+    "split": "test",
+    "query": "Linux système exploitation",
+    "intent": "Comprendre Linux et le rôle d’un système d’exploitation.",
+    "kind": "termes"
+  },
+  {
+    "id": "q14-2",
+    "family": "operating-system",
+    "split": "test",
+    "query": "logiciel qui gère les ressources matérielles et fait fonctionner les programmes",
+    "intent": "Comprendre Linux et le rôle d’un système d’exploitation.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q15-1",
+    "family": "network",
+    "split": "test",
+    "query": "réseau informatique",
+    "intent": "Comprendre les réseaux informatiques et l’échange de données entre machines.",
+    "kind": "termes"
+  },
+  {
+    "id": "q15-2",
+    "family": "network",
+    "split": "test",
+    "query": "comment plusieurs ordinateurs communiquent et échangent des données",
+    "intent": "Comprendre les réseaux informatiques et l’échange de données entre machines.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q16-1",
+    "family": "processor",
+    "split": "test",
+    "query": "processeur ordinateur",
+    "intent": "Comprendre le rôle du processeur dans l’exécution d’un programme.",
+    "kind": "termes"
+  },
+  {
+    "id": "q16-2",
+    "family": "processor",
+    "split": "test",
+    "query": "composant qui exécute les instructions des programmes",
+    "intent": "Comprendre le rôle du processeur dans l’exécution d’un programme.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q17-1",
+    "family": "ai",
+    "split": "test",
+    "query": "intelligence artificielle apprentissage automatique",
+    "intent": "Comprendre l’intelligence artificielle et l’apprentissage automatique.",
+    "kind": "termes"
+  },
+  {
+    "id": "q17-2",
+    "family": "ai",
+    "split": "test",
+    "query": "apprendre à partir d’exemples pour faire des prédictions",
+    "intent": "Comprendre l’intelligence artificielle et l’apprentissage automatique.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q18-1",
+    "family": "language",
+    "split": "test",
+    "query": "traitement automatique des langues",
+    "intent": "Comprendre le traitement automatique des langues humaines.",
+    "kind": "termes"
+  },
+  {
+    "id": "q18-2",
+    "family": "language",
+    "split": "test",
+    "query": "analyser automatiquement des textes écrits en langage humain",
+    "intent": "Comprendre le traitement automatique des langues humaines.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q19-1",
+    "family": "java-ambiguity",
+    "split": "test",
+    "query": "Java",
+    "intent": "Trouver le langage informatique Java, et non l’île ou le café.",
+    "kind": "termes"
+  },
+  {
+    "id": "q19-2",
+    "family": "java-ambiguity",
+    "split": "test",
+    "query": "Java langage informatique",
+    "intent": "Trouver le langage informatique Java, et non l’île ou le café.",
+    "kind": "reformulation"
+  },
+  {
+    "id": "q20-1",
+    "family": "out-of-scope",
+    "split": "test",
+    "query": "réserver un billet de train Paris Lyon demain",
+    "intent": "Aucun document ne doit être présenté comme une réponse opérationnelle à une demande de service en temps réel.",
+    "kind": "termes"
+  },
+  {
+    "id": "q20-2",
+    "family": "out-of-scope",
+    "split": "test",
+    "query": "météo à Tokyo heure par heure maintenant",
+    "intent": "Aucun document ne doit être présenté comme une réponse opérationnelle à une demande de service en temps réel.",
+    "kind": "reformulation"
+  }
+]

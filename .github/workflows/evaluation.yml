@@ -1,0 +1,82 @@
+name: Evaluate frozen relevance corpus
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: relevance-evaluation
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/ci.yml
+  evaluate:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: demo
+    env:
+      SSH_HOST: ${{ vars.SSH_HOST || '51.195.137.119' }}
+      SSH_USER: ${{ vars.SSH_USER || 'ubuntu' }}
+      SSH_PORT: ${{ vars.SSH_PORT || '22' }}
+      DEMO_HOST: localhost
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure pinned SSH credentials
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          test -n "$SSH_PRIVATE_KEY" || { echo 'Missing SSH_PRIVATE_KEY secret'; exit 1; }
+          test -n "$SSH_KNOWN_HOSTS" || { echo 'Missing SSH_KNOWN_HOSTS secret'; exit 1; }
+          [[ "$SSH_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ ]] || exit 1
+          [[ "$SSH_USER" =~ ^[a-z_][a-z0-9_-]*$ ]] || exit 1
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] || exit 1
+          install -m 700 -d "$RUNNER_TEMP/poc-ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/poc-ssh/key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/poc-ssh/known_hosts"
+          chmod 600 "$RUNNER_TEMP/poc-ssh/"*
+      - name: Capture live documents through the existing private connection
+        run: |
+          set -euo pipefail
+          mkdir -p evaluation-artifacts
+          ssh_options=(-i "$RUNNER_TEMP/poc-ssh/key" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/poc-ssh/known_hosts" -o ConnectTimeout=15)
+          ssh "${ssh_options[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" 'cd ~/search-services-poc && docker exec -i "$(docker compose -p search-services-poc ps -q web)" python - snapshot --vespa http://vespa:8080' < scripts/relevance.py > evaluation-artifacts/snapshot.json
+          python3 -c 'import json; from scripts.relevance import validate_snapshot; d=json.load(open("evaluation-artifacts/snapshot.json")); print("Snapshot documents:",len(validate_snapshot(d))); print("SHA256:",d["snapshot_id"])'
+      - name: Start an isolated Vespa on the runner
+        run: docker compose -p relevance-eval -f compose.yaml -f compose.http.yaml -f compose.small.yaml up -d --build web
+      - name: Replay exact captured documents and run both profiles
+        run: |
+          set -euo pipefail
+          compose=(docker compose -p relevance-eval -f compose.yaml -f compose.http.yaml -f compose.small.yaml)
+          "${compose[@]}" cp evaluation-artifacts/snapshot.json web:/tmp/relevance-snapshot.json
+          "${compose[@]}" cp evaluation web:/service/evaluation
+          "${compose[@]}" exec -T web python -m scripts.relevance load --snapshot /tmp/relevance-snapshot.json --vespa http://vespa:8080 --confirm-isolated
+          "${compose[@]}" exec -T web python -m scripts.relevance run --snapshot /tmp/relevance-snapshot.json --queries /service/evaluation/queries.json --vespa http://vespa:8080 > evaluation-artifacts/runs.json
+          cp evaluation/queries.json evaluation-artifacts/queries.json
+          cp vespa/schemas/card.sd evaluation-artifacts/card.sd
+          cp vespa/services.xml evaluation-artifacts/services.xml
+          cp evaluation/README.md evaluation-artifacts/README.md
+          cp scripts/relevance.py evaluation-artifacts/relevance.py
+          printf '%s\n' "$GITHUB_SHA" > evaluation-artifacts/commit.txt
+          docker inspect "$("${compose[@]}" ps -q vespa)" --format '{{.Image}}' > evaluation-artifacts/vespa-image-id.txt
+      - name: Build blind annotation forms and an honest initial report
+        run: |
+          python3 scripts/relevance.py prepare --out evaluation-artifacts
+          cat evaluation-artifacts/report.md >> "$GITHUB_STEP_SUMMARY"
+          cat evaluation-artifacts/diagnostics.json
+      - name: Publish the frozen evaluation kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: relevance-evaluation-${{ github.sha }}
+          path: evaluation-artifacts/
+          retention-days: 30
+      - name: Diagnostic logs on failure
+        if: failure()
+        run: docker compose -p relevance-eval -f compose.yaml -f compose.http.yaml -f compose.small.yaml logs --no-color --tail=80
+      - name: Remove runner credentials and isolated data
+        if: always()
+        run: |
+          rm -rf "$RUNNER_TEMP/poc-ssh"
+          docker compose -p relevance-eval -f compose.yaml -f compose.http.yaml -f compose.small.yaml down -v

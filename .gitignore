@@ -9,3 +9,5 @@ results/*.json
 .deploy.lock
 .deployed-commit
 source.tar.gz
+
+evaluation-artifacts/

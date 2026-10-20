@@ -74,6 +74,10 @@ See [analytics access and data scope](docs/analytics.md). Use `?ref=mistral-sear
 
 See [Vespa configuration and measurement protocol](docs/vespa.md) for field storage, ranking profiles and resource limits.
 
+## Relevance evaluation
+
+See [the frozen-corpus evaluation protocol](evaluation/README.md): 40 predeclared French queries, intent-level dev/test separation, blind 0–3 annotation and nDCG@10 / Precision@5 / pooled Recall@10. The manual **Evaluate frozen relevance corpus** workflow captures the live corpus read-only, replays it on an isolated runner and produces the annotation kit. Unfilled judgments never count as irrelevant; no human relevance scores are claimed before annotation.
+
 ## Architecture and trade-offs
 
 ```mermaid
