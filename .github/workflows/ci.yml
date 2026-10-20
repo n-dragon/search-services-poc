@@ -23,6 +23,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: DEMO_HOST=localhost docker compose -f compose.yaml -f compose.http.yaml -f compose.small.yaml up -d --build
+      - name: Verify worker and API SQLite volume sharing
+        run: |
+          DEMO_HOST=localhost docker compose --profile live -f compose.yaml -f compose.http.yaml -f compose.small.yaml run --rm --no-deps --build wikipedia python -c 'import time; from scripts.wikipedia import Store; from app.ingestion import database_path; s=Store(database_path()); s.enqueue("volume-probe"); s.mark(heartbeat=time.time())'
+          python3 scripts/check_ingestion_volume.py
       - run: python3 scripts/check_analytics.py
       - run: python3 scripts/smoke.py
       - run: POC_URL=http://localhost python3 scripts/smoke.py

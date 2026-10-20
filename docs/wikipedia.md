@@ -27,6 +27,8 @@ Les résultats conservent la révision, le lien vers la version source, l’hist
 
 ## Suivi et validation
 
+Le montage du volume par l’API autorise les fichiers de coordination WAL/SHM ; la connexion SQLite utilise `mode=ro` et n’exécute aucune mutation des données. Un montage système de fichiers en lecture seule ne suffit pas lorsque SQLite doit recréer ces fichiers de coordination.
+
 `GET /api/ingestion` fournit un instantané en lecture seule : heartbeat du worker, connexion SSE, nombre de pages actives, file, écritures, échecs, dernières synchronisations. Le délai par page mesure le temps écoulé depuis sa mise en file ; il ne mesure pas le retard initial de livraison Wikimedia. Un succès est un acquittement Vespa, pas une garantie de visibilité immédiate dans une requête.
 
 La CI de base reste indépendante de la disponibilité Wikimedia. Les tests simulent coupures, doublons, événements concurrents, suppressions, renommages, révisions anciennes et plafonds. Le déploiement ajoute `scripts/check_wikipedia.py` sur la VM puis depuis GitHub : au moins une introduction réelle doit être ingérée et relue dans Vespa avec sa provenance.

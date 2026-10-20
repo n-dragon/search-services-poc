@@ -1,6 +1,7 @@
 """Read-only public snapshot. The ingestion database never stores editor identities."""
 from contextlib import closing
 import os
+import logging
 from pathlib import Path
 import sqlite3
 import time
@@ -37,5 +38,6 @@ def snapshot():
                 'last_error': state.get('last_error') or None,
                 'last_success': float(state.get('last_success', 0)),
                 'reconciliations': int(state.get('reconciliations', 0))}
-    except (sqlite3.Error, OSError, ValueError):
+    except (sqlite3.Error, OSError, ValueError) as exc:
+        logging.getLogger(__name__).warning("Ingestion snapshot unavailable: %s", exc)
         return {**empty, 'state': 'unavailable'}
