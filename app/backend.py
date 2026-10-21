@@ -64,11 +64,11 @@ class VespaBackend:
         hits = [{"id": h["fields"]["card_id"], "title": h["fields"]["title"],
                  "body": h["fields"]["body"][:400], "source": h["fields"]["source"],
                  **{key: h["fields"].get(key, "") for key in ("corpus", "revision", "indexed_at", "license", "history", "native_id", "kind", "source_updated", "fetched_at")},
-                 "features": h["fields"].get("summaryfeatures", {}), "score": h.get("relevance", 0)}
+                 "features": h["fields"].get("summaryfeatures", {}), "score": None if ranking == 'unranked' else h.get("relevance", 0)}
                 for h in data.get("root", {}).get("children", []) if "fields" in h]
         for hit in hits:
             hit['explanation'] = explain(ranking, hit['features'], hit['score'])
-        return {"backend": "vespa", "ranking": "BM25", "ranking_profile": ranking,
+        return {"backend": "vespa", "ranking": "none" if ranking == 'unranked' else "BM25", "ranking_profile": ranking,
                 'ranking_details': {'id': ranking, **PROFILES[ranking]}, "source_filter": source, "corpus_version": CORPUS_VERSION,
                 "total": data.get("root", {}).get("fields", {}).get("totalCount", 0), "hits": hits}
 

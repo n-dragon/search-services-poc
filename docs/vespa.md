@@ -13,10 +13,11 @@ La langue française est fixée avant l’indexation des textes et à la requêt
 
 ## Classement et explication
 
-Six profils sont accessibles via la recherche, le laboratoire YQL et les outils MCP. La référence reste `lexical` :
+Six profils de scoring et un mode brut sont accessibles via la recherche, le laboratoire YQL et les outils MCP. La référence BM25 reste `lexical` :
 
 | Profil | Formule | Exécution / compromis |
 | --- | --- | --- |
+| `unranked` | Aucun score de pertinence | Profil natif Vespa ; ordre interne non garanti. Même sélection lexicale et même filtre. |
 | `lexical` | `2T + B` | Première phase ; référence inchangée. |
 | `lexical-balanced` | `T + B` | Première phase ; les distributions de scores des champs ne sont pas nécessairement comparables. |
 | `lexical-title` | `4T + B` | Première phase ; priorité accrue au titre, au risque de manquer des réponses dans le texte. |
@@ -32,7 +33,19 @@ Pour chaque champ, `P=0` si `fieldMatch(champ).matches<2`. Sinon `P=unweightedPr
 
 Les features positionnelles `fieldMatch` sont coûteuses. Elles ne participent pas à la première phase : seules les 50 meilleures correspondances BM25 par nœud sont reclassées. La VM n’a qu’un nœud. Cette sélection peut exclure un candidat que la formule finale aurait favorisé ; ce n’est pas un classement exhaustif de toutes les correspondances par la seconde formule. Vespa peut ajuster les scores des documents non reclassés pour les maintenir derrière les candidats reclassés.
 
-Les `summary-features` restituent les signaux réels utilisés sur les résultats affichés. `app/rankings.py` fournit un catalogue partagé pour HTTP/MCP et une décomposition qui compare sa somme au score Vespa ; une feature absente est signalée, jamais remplacée par zéro. Un éventuel désaccord de score reste visible. Le site propose aussi six tops de cinq résultats sur la même requête et le même filtre, exécutés par lots de deux. Le recouvrement avec le top de référence décrit seulement l’accord des classements.
+Les `summary-features` restituent les signaux réels utilisés sur les résultats affichés. `app/rankings.py` fournit un catalogue partagé pour HTTP/MCP et une décomposition qui compare sa somme au score Vespa ; une feature absente est signalée, jamais remplacée par zéro. Un éventuel désaccord de score reste visible. Le site compare les six tops de cinq résultats au top brut sur la même requête et le même filtre, par lots de deux : total de correspondances, durée aller-retour, documents communs et rang brut quand il est visible. Le recouvrement décrit seulement l’accord des listes.
+
+### Comparaison avec une recherche brute
+
+`ranking=unranked` sélectionne le profil natif sans classement de pertinence. Le YQL, `type=any`, la langue française, le filtre de source et le nombre de résultats restent identiques. L’analyse linguistique est donc conservée : « brut » ne signifie ni recherche de sous-chaîne ni scan complet en Python. Aucun tri supplémentaire n’est appliqué ; l’ordre interne est non garanti et peut changer lorsque l’index évolue. L’API expose `score: null` et une explication explicite, sans inventer un score zéro ou des contributions BM25.
+
+```sh
+POC_URL=http://localhost:8000 python3 scripts/compare_search.py
+```
+
+Ce script compare trois requêtes aux sept modes : un échauffement, puis trois appels séquentiels mesurés par mode et requête, entrelacés avec rotation du premier mode. Il restitue les tops, les rangs visibles dans le top brut, le recouvrement et la médiane aller-retour. Le workflow de déploiement inscrit les résultats dans son résumé. Ces petits échantillons incluent le réseau, HTTP et le décodage : ils n’isolent pas le coût CPU du classement. Les comptes observés sont conservés pour détecter une variation du corpus vivant. Aucune amélioration de pertinence ou de performance n’en est déduite sans expérience dédiée.
+
+Le smoke test utilise les dix fiches originales et récupère **toutes** leurs correspondances (limite 10) pour vérifier l’égalité des ensembles brut/classés sur trois requêtes, en plus de l’absence de score et de features en mode brut. Comparer seulement deux tops tronqués ne suffirait pas à vérifier cette égalité.
 
 Les tests réels recalculent les six formules depuis les features Vespa, y compris la couverture partielle et un bonus de proximité non nul. Cela vérifie le câblage, pas la pertinence. Les poids, constante de saturation et budget de reclassement ne sont pas optimisés sur des annotations. Les scores ne sont ni des probabilités ni comparables entre profils ou requêtes ; les temps navigateur ne constituent pas un benchmark contrôlé.
 

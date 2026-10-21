@@ -77,6 +77,14 @@ jobs:
             export POC_URL="http://$SSH_HOST"
           fi
           python3 scripts/benchmark.py
+      - name: Compare raw and scored search
+        run: |
+          if [ -n "$DEMO_DOMAIN" ]; then
+            export POC_URL="https://$DEMO_DOMAIN"
+          else
+            export POC_URL="http://$SSH_HOST"
+          fi
+          python3 scripts/compare_search.py
       - name: Remove runner credentials
         if: always()
         run: rm -rf "$RUNNER_TEMP/poc-ssh" .source-secrets.env

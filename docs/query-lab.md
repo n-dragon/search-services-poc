@@ -40,4 +40,4 @@ Références : [YQL](https://docs.vespa.ai/en/reference/querying/yql.html), [gro
 
 ## Classement YQL
 
-Les scénarios `search` et `title` acceptent les six profils du [catalogue de classement](vespa.md). Les réponses incluent `ranking_details` et `score_explanations`, avec les features réellement renvoyées par Vespa. Le scénario `count` ignore le classement. Les outils HTTP/MCP utilisent le même type fermé `Ranking`.
+Les scénarios `search` et `title` acceptent les six profils de scoring et le mode brut `unranked` du [catalogue de classement](vespa.md). Les réponses incluent `ranking_details` et `score_explanations`, avec les features réellement renvoyées par Vespa. En brut, `score` vaut `null`, sans calcul de pertinence et sans garantie d’ordre interne. Le scénario `count` ignore le classement. Les outils HTTP/MCP utilisent le même type fermé `Ranking`.

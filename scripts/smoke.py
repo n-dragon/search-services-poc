@@ -17,10 +17,12 @@ def get(path):
 def check_rankings():
     profiles = get('/api/rankings')['profiles']
     assert {p['id'] for p in profiles} == {'lexical', 'lexical-balanced', 'lexical-title',
-        'lexical-saturated', 'lexical-coverage', 'lexical-proximity'}
+        'lexical-saturated', 'lexical-coverage', 'lexical-proximity', 'unranked'}
     partial_coverage, proximity_bonus = False, False
     for profile in profiles:
         ranking = profile['id']
+        if ranking == 'unranked':
+            continue
         for query in ('réplication', 'index inversé', 'classement BM25'):
             ranked = get('/api/search?' + urllib.parse.urlencode({'q': query, 'ranking': ranking, 'limit': 10}))
             assert ranked['ranking_profile'] == ranking and ranked['hits'], ranked
@@ -49,6 +51,20 @@ def check_rankings():
         print('PASS: real Vespa ranking and score decomposition', ranking)
     assert partial_coverage, 'No partial query coverage exercised'
     assert proximity_bonus, 'No actual multi-term proximity bonus exercised'
+    # The ten original cards form a bounded, fixed corpus: fetch ALL matches,
+    # rather than equating two truncated top-k sets on the changing live corpus.
+    for query in ('réplication', 'index inversé', 'recherche'):
+        raw = get('/api/search?' + urllib.parse.urlencode({'q': query, 'ranking': 'unranked',
+            'source': 'systems-cards-fr-v2', 'limit': 10}))
+        assert raw['hits'] and raw['total'] == len(raw['hits']) <= 10, raw
+        assert raw['ranking'] == 'none'
+        assert all(h['score'] is None and not h['features'] and not h['explanation']['available'] for h in raw['hits']), raw
+        for profile in profiles:
+            ranked = get('/api/search?' + urllib.parse.urlencode({'q': query, 'ranking': profile['id'],
+                'source': 'systems-cards-fr-v2', 'limit': 10}))
+            assert ranked['total'] == raw['total']
+            assert {h['id'] for h in ranked['hits']} == {h['id'] for h in raw['hits']}
+    print('PASS: raw Vespa search has no relevance score and the same complete fixed-corpus matches as all six rankings')
 
 
 def main():

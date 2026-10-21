@@ -19,7 +19,7 @@ ROOT=Path(__file__).parent/'data'/'wikidata-graph.json'
 PREFIX='PREFIX wd: <http://www.wikidata.org/entity/>\nPREFIX wdt: <http://www.wikidata.org/prop/direct/>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n'
 SCENARIOS={
  'yql':{
-  'search':('Recherche et filtre','Retrouver des documents par texte et source ; comparer les six profils de classement.'),
+  'search':('Recherche et filtre','Retrouver des documents par texte et source ; comparer le mode brut aux six profils de classement.'),
   'title':('Recherche dans le titre','Restreindre le terme au titre pour observer la différence de couverture.'),
   'count':('Agrégation par source','Compter les documents par corpus, sans charger les textes. Le corpus est vivant.')},
  'sparql':{
@@ -117,7 +117,7 @@ def execute(request,backend):
                     for child in node.get('children',[]):visit(child)
                 for child in children:visit(child)
             else:
-                rows=[{key:hit.get('fields',{}).get(key,'') for key in ('card_id','title','corpus','source')}|{'score':hit.get('relevance',0)} for hit in children if 'card_id' in hit.get('fields',{})]
+                rows=[{key:hit.get('fields',{}).get(key,'') for key in ('card_id','title','corpus','source')}|{'score':None if request.ranking == 'unranked' else hit.get('relevance',0)} for hit in children if 'card_id' in hit.get('fields',{})]
                 explanations = [{'id': hit['fields']['card_id'], 'features': hit['fields'].get('summaryfeatures', {}),
                     'explanation': explain(request.ranking, hit['fields'].get('summaryfeatures', {}), hit.get('relevance',0))}
                     for hit in children if 'card_id' in hit.get('fields',{})]

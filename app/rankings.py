@@ -3,7 +3,7 @@ import math
 from typing import Literal
 
 Ranking = Literal['lexical', 'lexical-balanced', 'lexical-title',
-    'lexical-saturated', 'lexical-coverage', 'lexical-proximity']
+    'lexical-saturated', 'lexical-coverage', 'lexical-proximity', 'unranked']
 
 PROFILES = {
     'lexical': {
@@ -36,6 +36,11 @@ PROFILES = {
         'description': 'Ajoute un bonus lorsque plusieurs termes se suivent dans le même champ.',
         'tradeoff': 'Aucun bonus avec moins de deux termes trouvés dans le champ. L’ordre et la segmentation influencent le bonus ; ce n’est pas une recherche de phrase exacte.',
         'phase': 'second', 'rerank_count': 50},
+    'unranked': {
+        'title': 'Brut · sans classement', 'formula': 'Aucun score de pertinence',
+        'description': 'Même recherche lexicale et même filtre de source ; les correspondances sont rendues sans calcul de pertinence.',
+        'tradeoff': 'Ordre interne non garanti : ce top peut changer avec l’index. Ce mode conserve l’analyse linguistique et au moins un terme correspondant ; ce n’est pas une recherche de sous-chaîne.',
+        'phase': 'none', 'rerank_count': None},
 }
 
 DEFINITIONS = {
@@ -48,6 +53,7 @@ DEFINITIONS = {
 
 def catalog():
     return {'profiles': [{'id': key, **value} for key, value in PROFILES.items()],
+        'comparison_baseline': 'unranked',
         'definitions': DEFINITIONS,
         'limits': 'Les profils à deux phases reclassent les 50 meilleurs candidats BM25 par nœud (un seul nœud ici). Ils ne parcourent pas de nouveau le corpus. Scores comparables à l’intérieur d’un profil et d’une requête, pas entre formules. Aucun profil n’est validé comme plus pertinent.'}
 
@@ -56,6 +62,9 @@ def explain(profile, features, actual_score):
     """Never replace missing engine features with fabricated zero contributions."""
     if profile not in PROFILES:
         raise ValueError('Unknown ranking profile')
+    if profile == 'unranked':
+        return {'available': False, 'formula': PROFILES[profile]['formula'],
+            'reason': 'Mode brut : aucun score de pertinence calculé. L’ordre interne n’est pas garanti.'}
     required = ['bm25(title)', 'bm25(body)']
     if profile == 'lexical-coverage':
         required += ['query_coverage']
