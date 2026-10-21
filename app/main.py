@@ -17,6 +17,7 @@ from app.ingestion import snapshot
 from app.sources import status as sources_status
 from app import lab
 from app.observability import QueryMeasurements, IngestionMeasurements, current
+from app.rankings import Ranking, catalog as ranking_catalog
 
 backend = VespaBackend()
 mcp = FastMCP("Search Services POC", stateless_http=True, json_response=True,
@@ -34,6 +35,9 @@ ingestion_measurements = IngestionMeasurements()
 
 
 def bounded_search(query, limit, ranking="lexical", source="all"):
+    observation = current.get()
+    if observation is not None:
+        observation.ranking = ranking
     if not slots.acquire(blocking=False):
         raise SearchUnavailable("Search concurrency limit reached; retry later", 'busy')
     start = time.perf_counter()
@@ -55,7 +59,7 @@ def bounded_search(query, limit, ranking="lexical", source="all"):
 def search_documents(
     query: Annotated[str, Field(min_length=1, max_length=256)],
     limit: Annotated[int, Field(ge=1, le=10)] = 5,
-    ranking: Literal["lexical", "lexical-balanced"] = "lexical",
+    ranking: Ranking = "lexical",
     source: SourceFilter = "all",
 ) -> dict:
     """Search indexed cards, Wikipedia introductions and bounded structured sources with optional source filter."""
@@ -75,7 +79,7 @@ def get_document(document_id: Annotated[str, Field(pattern=r"^[a-z0-9-]{1,64}$")
 
 
 @mcp.tool()
-def query_index(scenario: lab.YQLScenario = "search", query: Annotated[str, Field(min_length=1,max_length=256)] = "réplication", source: SourceFilter = "all", ranking: Literal["lexical","lexical-balanced"] = "lexical", limit: Annotated[int,Field(ge=1,le=20)] = 5) -> dict:
+def query_index(scenario: lab.YQLScenario = "search", query: Annotated[str, Field(min_length=1,max_length=256)] = "réplication", source: SourceFilter = "all", ranking: Ranking = "lexical", limit: Annotated[int,Field(ge=1,le=20)] = 5) -> dict:
     """Execute approved YQL templates; return text, bound parameters and real Vespa results."""
     with query_measurements.measure('lab', 'mcp', 'vespa'):
         return lab.execute(lab.LabRequest(engine="yql",scenario=scenario,query=query,source=source,ranking=ranking,limit=limit),backend)
@@ -194,11 +198,16 @@ def sources():
 
 @app.get("/api/search")
 def search(q: str = Query(min_length=1, max_length=256), limit: int = Query(default=5, ge=1, le=10),
-           ranking: Literal["lexical", "lexical-balanced"] = "lexical",
+           ranking: Ranking = "lexical",
            source: SourceFilter = "all"):
     if not q.strip():
         raise HTTPException(422, "Query cannot be blank")
     return bounded_search(q, limit, ranking, source)
+
+
+@app.get('/api/rankings')
+def rankings():
+    return ranking_catalog()
 
 
 @app.get("/api/lab/catalog")

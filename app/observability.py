@@ -28,6 +28,7 @@ class Observation:
     outcome: str = 'success'
     reason: str | None = None
     engine_ms: float = 0.0
+    ranking: str | None = None
 
 
 @contextmanager
@@ -74,6 +75,7 @@ class QueryMeasurements:
             row = {'id': measurement.identifier, 'timestamp': now,
                 'operation': measurement.operation, 'transport': measurement.transport,
                 'engine': measurement.engine, 'outcome': measurement.outcome,
+                'ranking': measurement.ranking,
                 'reason': measurement.reason, 'duration_ms': round(duration, 3),
                 'engine_ms': round(measurement.engine_ms, 3)}
             with self.lock:
@@ -98,7 +100,7 @@ class QueryMeasurements:
         seconds_observed = min(WINDOW, max(1, now-self.started_at))
         groups = {}
         for sample in samples:
-            key = (sample['operation'], sample['transport'], sample['engine'])
+            key = (sample['operation'], sample['transport'], sample['engine'], sample['ranking'])
             groups.setdefault(key, []).append(sample)
         series = []
         first_minute = int(max(now-WINDOW, self.started_at)//60)
@@ -122,8 +124,8 @@ class QueryMeasurements:
             'totals': {'completed': total, 'in_flight': active, 'outcomes': outcomes,
                 'duration_seconds': seconds},
             'window': {**summarize(samples), 'requests_per_second': len(samples)/seconds_observed},
-            'groups': [{'operation': key[0], 'transport': key[1], 'engine': key[2],
-                **summarize(rows)} for key, rows in sorted(groups.items())],
+            'groups': [{'operation': key[0], 'transport': key[1], 'engine': key[2], 'ranking': key[3],
+                **summarize(rows)} for key, rows in sorted(groups.items(), key=lambda item: tuple(value or '' for value in item[0]))],
             'series': series, 'recent': list(reversed(samples[-30:]))}
 
 

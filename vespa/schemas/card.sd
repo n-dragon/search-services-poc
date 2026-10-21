@@ -33,4 +33,42 @@ schema card {
   rank-profile lexical-balanced inherits lexical {
     first-phase { expression: bm25(title) + bm25(body) }
   }
+  rank-profile lexical-title inherits lexical {
+    first-phase { expression: 4 * bm25(title) + bm25(body) }
+  }
+  rank-profile lexical-saturated inherits lexical {
+    first-phase { expression: 2 * bm25(title) / (8 + bm25(title)) + bm25(body) / (8 + bm25(body)) }
+  }
+  # Positional fieldMatch features are intentionally bounded to a second phase.
+  rank-profile lexical-coverage inherits lexical {
+    function query_coverage() {
+      expression: max(fieldMatch(title).queryCompleteness, fieldMatch(body).queryCompleteness)
+    }
+    second-phase {
+      expression: (2 * bm25(title) + bm25(body)) * (0.5 + 0.5 * query_coverage)
+      rerank-count: 50
+    }
+    summary-features inherits lexical {
+      query_coverage fieldMatch(title).queryCompleteness fieldMatch(body).queryCompleteness
+    }
+  }
+  rank-profile lexical-proximity inherits lexical {
+    function title_proximity() {
+      expression: if(fieldMatch(title).matches > 1, fieldMatch(title).unweightedProximity * fieldMatch(title).relatedness * fieldMatch(title).queryCompleteness, 0)
+    }
+    function body_proximity() {
+      expression: if(fieldMatch(body).matches > 1, fieldMatch(body).unweightedProximity * fieldMatch(body).relatedness * fieldMatch(body).queryCompleteness, 0)
+    }
+    second-phase {
+      expression: 2 * bm25(title) + bm25(body) + 2 * title_proximity + body_proximity
+      rerank-count: 50
+    }
+    summary-features inherits lexical {
+      title_proximity body_proximity
+      fieldMatch(title).matches fieldMatch(body).matches
+      fieldMatch(title).unweightedProximity fieldMatch(body).unweightedProximity
+      fieldMatch(title).relatedness fieldMatch(body).relatedness
+      fieldMatch(title).queryCompleteness fieldMatch(body).queryCompleteness
+    }
+  }
 }

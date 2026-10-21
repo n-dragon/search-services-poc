@@ -13,14 +13,30 @@ La langue française est fixée avant l’indexation des textes et à la requêt
 
 ## Classement et explication
 
-Deux profils sont comparables depuis le site :
+Six profils sont accessibles via la recherche, le laboratoire YQL et les outils MCP. La référence reste `lexical` :
 
-- `lexical` : `2 * bm25(title) + bm25(body)` ;
-- `lexical-balanced` : `bm25(title) + bm25(body)`.
+| Profil | Formule | Exécution / compromis |
+| --- | --- | --- |
+| `lexical` | `2T + B` | Première phase ; référence inchangée. |
+| `lexical-balanced` | `T + B` | Première phase ; les distributions de scores des champs ne sont pas nécessairement comparables. |
+| `lexical-title` | `4T + B` | Première phase ; priorité accrue au titre, au risque de manquer des réponses dans le texte. |
+| `lexical-saturated` | `2T/(8+T) + B/(8+B)` | Première phase ; saturation des contributions BM25, score dans `[0,3[` pour T/B positifs. La constante 8 reste heuristique. |
+| `lexical-coverage` | `(2T+B) × (0,5+0,5C)` | Seconde phase sur les 50 meilleurs candidats BM25 par nœud ; C favorise la couverture dans un même champ. |
+| `lexical-proximity` | `2T+B+2Pₜ+Pᵦ` | Seconde phase sur les mêmes 50 candidats ; bonus positionnel, sans effet avec moins de deux termes trouvés dans un champ. |
 
-Les paramètres de référence sont explicites : `k1=1.2` et `b=0.75` sur chaque champ. `k1` règle la saturation de la fréquence des termes et `b` la normalisation selon la longueur du champ. Ce ne sont pas des valeurs optimisées pour notre corpus. Les `summary-features` exposent les deux contributions sur les résultats retournés, sans les calculer pour tous les candidats comme des `match-features`.
+`T=bm25(title)` et `B=bm25(body)`, toujours avec `k1=1.2` et `b=0.75`. `k1` règle la saturation de la fréquence des termes ; `b` la normalisation par longueur. La saturation du profil `lexical-saturated` s’applique ensuite au **score BM25 complet**, pas directement à la fréquence des termes.
 
-Le smoke réel vérifie que le score correspond à la formule pour les deux profils. Cela vérifie le câblage, pas la pertinence. Une comparaison de pertinence nécessitera un instantané, des requêtes annotées et nDCG/Recall. Le corpus vivant peut évoluer entre deux appels.
+`C=max(fieldMatch(title).queryCompleteness, fieldMatch(body).queryCompleteness)`. Chaque couverture mesure la proportion de termes de la requête trouvés dans le champ. Ce maximum n’est pas une union : un titre contenant la moitié des termes et un texte contenant l’autre moitié ne donnent pas une couverture de 100 %. La décomposition affiche les deux contributions BM25 et une correction négative de couverture, équivalente à la multiplication de la formule.
+
+Pour chaque champ, `P=0` si `fieldMatch(champ).matches<2`. Sinon `P=unweightedProximity × relatedness × queryCompleteness` de ce champ : proximité et ordre, regroupement dans les mêmes segments et couverture. La segmentation compte aussi : le seul signal `fieldMatch.proximity` peut rester élevé pour plusieurs segments éloignés. Ce bonus ne remplace ni une recherche de phrase exacte ni une recherche sémantique.
+
+Les features positionnelles `fieldMatch` sont coûteuses. Elles ne participent pas à la première phase : seules les 50 meilleures correspondances BM25 par nœud sont reclassées. La VM n’a qu’un nœud. Cette sélection peut exclure un candidat que la formule finale aurait favorisé ; ce n’est pas un classement exhaustif de toutes les correspondances par la seconde formule. Vespa peut ajuster les scores des documents non reclassés pour les maintenir derrière les candidats reclassés.
+
+Les `summary-features` restituent les signaux réels utilisés sur les résultats affichés. `app/rankings.py` fournit un catalogue partagé pour HTTP/MCP et une décomposition qui compare sa somme au score Vespa ; une feature absente est signalée, jamais remplacée par zéro. Un éventuel désaccord de score reste visible. Le site propose aussi six tops de cinq résultats sur la même requête et le même filtre, exécutés par lots de deux. Le recouvrement avec le top de référence décrit seulement l’accord des classements.
+
+Les tests réels recalculent les six formules depuis les features Vespa, y compris la couverture partielle et un bonus de proximité non nul. Cela vérifie le câblage, pas la pertinence. Les poids, constante de saturation et budget de reclassement ne sont pas optimisés sur des annotations. Les scores ne sont ni des probabilités ni comparables entre profils ou requêtes ; les temps navigateur ne constituent pas un benchmark contrôlé.
+
+Le protocole d’évaluation figée existant et le petit benchmark de déploiement conservent leurs **deux profils d’origine** : les nouveaux profils ne modifient pas rétroactivement l’expérience scellée. Une nouvelle évaluation des six profils nécessite une nouvelle collecte de résultats et un pool annoté adapté. Le corpus vivant peut évoluer entre les appels de comparaison.
 
 ## Mémoire et protections
 
@@ -55,3 +71,6 @@ Le workflow de déploiement conserve le JSON dans son résumé. Une variation do
 - https://docs.vespa.ai/en/reference/ranking/rank-feature-configuration.html
 - https://docs.vespa.ai/en/reference/applications/services/content.html
 - https://docs.vespa.ai/en/performance/sizing-feeding.html
+
+- https://docs.vespa.ai/en/reference/ranking/rank-features.html
+- https://docs.vespa.ai/en/ranking/phased-ranking.html

@@ -4,8 +4,9 @@ import re
 import httpx
 from app.sources import ALL_CORPORA
 from app.observability import engine_span
+from app.rankings import PROFILES, explain
 
-RANKINGS = {"lexical", "lexical-balanced"}
+RANKINGS = set(PROFILES)
 
 CORPUS_VERSION = "multi-source-fr-v4"
 
@@ -65,7 +66,10 @@ class VespaBackend:
                  **{key: h["fields"].get(key, "") for key in ("corpus", "revision", "indexed_at", "license", "history", "native_id", "kind", "source_updated", "fetched_at")},
                  "features": h["fields"].get("summaryfeatures", {}), "score": h.get("relevance", 0)}
                 for h in data.get("root", {}).get("children", []) if "fields" in h]
-        return {"backend": "vespa", "ranking": "BM25", "ranking_profile": ranking, "source_filter": source, "corpus_version": CORPUS_VERSION,
+        for hit in hits:
+            hit['explanation'] = explain(ranking, hit['features'], hit['score'])
+        return {"backend": "vespa", "ranking": "BM25", "ranking_profile": ranking,
+                'ranking_details': {'id': ranking, **PROFILES[ranking]}, "source_filter": source, "corpus_version": CORPUS_VERSION,
                 "total": data.get("root", {}).get("fields", {}).get("totalCount", 0), "hits": hits}
 
     def get_document(self, document_id: str):

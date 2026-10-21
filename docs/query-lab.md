@@ -37,3 +37,7 @@ L’interface montre les scénarios, les paramètres, le texte soumis, les résu
 Les tests unitaires vérifient l’admission avant tout appel moteur, les bornes, les paramètres YQL séparés, les vrais résultats SPARQL, la concurrence, le nettoyage après timeout et les appels MCP. `scripts/check_lab.py` vérifie les sept scénarios sur le vrai Vespa du runner puis sur la VM, les refus HTTP et les deux outils MCP. Aucune clé de modèle ni génération de texte par LLM n’est nécessaire.
 
 Références : [YQL](https://docs.vespa.ai/en/reference/querying/yql.html), [grouping Vespa](https://docs.vespa.ai/en/querying/grouping.html), [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/), [RDFLib](https://rdflib.readthedocs.io/en/latest/intro_to_sparql/).
+
+## Classement YQL
+
+Les scénarios `search` et `title` acceptent les six profils du [catalogue de classement](vespa.md). Les réponses incluent `ranking_details` et `score_explanations`, avec les features réellement renvoyées par Vespa. Le scénario `count` ignore le classement. Les outils HTTP/MCP utilisent le même type fermé `Ranking`.

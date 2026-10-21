@@ -10,7 +10,8 @@ from typing import Literal
 from pydantic import BaseModel,ConfigDict,Field
 from app.sources import ALL_CORPORA
 from app.backend import SearchUnavailable
-from app.observability import engine_span
+from app.observability import engine_span, current
+from app.rankings import Ranking, catalog as ranking_catalog, explain, PROFILES
 
 YQLScenario=Literal['search','title','count']
 GraphScenario=Literal['relations','two_hops','peers','counts']
@@ -18,7 +19,7 @@ ROOT=Path(__file__).parent/'data'/'wikidata-graph.json'
 PREFIX='PREFIX wd: <http://www.wikidata.org/entity/>\nPREFIX wdt: <http://www.wikidata.org/prop/direct/>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n'
 SCENARIOS={
  'yql':{
-  'search':('Recherche et filtre','Retrouver des documents par texte et source ; comparer les deux profils BM25.'),
+  'search':('Recherche et filtre','Retrouver des documents par texte et source ; comparer les six profils de classement.'),
   'title':('Recherche dans le titre','Restreindre le terme au titre pour observer la différence de couverture.'),
   'count':('Agrégation par source','Compter les documents par corpus, sans charger les textes. Le corpus est vivant.')},
  'sparql':{
@@ -39,7 +40,7 @@ class LabRequest(BaseModel):
     scenario:str=Field(default='search',min_length=1,max_length=30)
     query:str=Field(default='réplication',min_length=1,max_length=256)
     source:str=Field(default='all',max_length=40)
-    ranking:Literal['lexical','lexical-balanced']='lexical'
+    ranking:Ranking='lexical'
     entity:str=Field(default='Q11660',pattern=r'^Q[1-9][0-9]{0,10}$')
     language:Literal['fr','en']='fr'
     limit:int=Field(default=5,ge=1,le=20)
@@ -57,7 +58,7 @@ def graph_info():
 def catalog():
     info=graph_info();data=json.loads(ROOT.read_bytes())
     return {'scenarios':{engine:[{'id':key,'title':title,'explanation':explanation} for key,(title,explanation) in entries.items()] for engine,entries in SCENARIOS.items()},
-      'sources':list(ALL_CORPORA),'entities':[{'id':r['id'],'label':r['labels'].get('fr',r['labels'].get('en',r['id']))} for r in data['entities'] if r['id'] in info['roots']],
+      'rankings': ranking_catalog(), 'sources':list(ALL_CORPORA),'entities':[{'id':r['id'],'label':r['labels'].get('fr',r['labels'].get('en',r['id']))} for r in data['entities'] if r['id'] in info['roots']],
       'graph':info,'policy':{'max_rows':20,'concurrency':2,'vespa_timeout_seconds':2,'graph_wall_timeout_seconds':3,
       'admission':'Modèles fixes : seuls les paramètres validés varient. Le texte soumis doit correspondre exactement au modèle généré (hors espaces extérieurs). Aucun exécuteur de requêtes libres.',
       'refusals':['Écritures','Fédération SERVICE et chargement FROM','Parcours non bornés','Requêtes hors modèle et limites supérieures à 20']}}
@@ -100,6 +101,9 @@ def compile_query(request):
 
 def execute(request,backend):
     plan=compile_query(request)
+    observation = current.get()
+    if observation is not None:
+        observation.ranking = request.ranking if request.engine == 'yql' and request.scenario != 'count' else None
     if not slots.acquire(blocking=False):raise SearchUnavailable('Laboratoire occupé : deux exécutions sont déjà en cours.', 'busy')
     start=time.perf_counter()
     try:
@@ -114,8 +118,14 @@ def execute(request,backend):
                 for child in children:visit(child)
             else:
                 rows=[{key:hit.get('fields',{}).get(key,'') for key in ('card_id','title','corpus','source')}|{'score':hit.get('relevance',0)} for hit in children if 'card_id' in hit.get('fields',{})]
+                explanations = [{'id': hit['fields']['card_id'], 'features': hit['fields'].get('summaryfeatures', {}),
+                    'explanation': explain(request.ranking, hit['fields'].get('summaryfeatures', {}), hit.get('relevance',0))}
+                    for hit in children if 'card_id' in hit.get('fields',{})]
             data={'rows':rows[:request.limit],'total':payload.get('root',{}).get('fields',{}).get('totalCount',0),
                   'provenance':{'pipeline':'multi-source-fr-v4','snapshot':'Corpus vivant, non atomique ; provenance dans chaque résultat.'}}
+            if request.scenario != 'count':
+                data['ranking_details'] = {'id': request.ranking, **PROFILES[request.ranking]}
+                data['score_explanations'] = explanations[:request.limit]
         else:
             try:
                 with engine_span():

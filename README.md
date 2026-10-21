@@ -126,3 +126,7 @@ Le profil `live` ajoute des échantillons quotidiens Wikidata, UniProt, OpenAlex
 ### Observabilité des requêtes et de l’indexation
 
 `/observability` affiche les mesures HTTP/MCP, p50/p95/p99, refus, erreurs et derniers appels, ainsi que les files, reprises, débits d’acquittement et états des collecteurs. Aucun texte de requête ni donnée de visiteur n’est conservé. Voir [le périmètre, la rétention et les limites](docs/observability.md). Les API JSON et compteurs Prometheus sont accessibles depuis la page.
+
+### Formules de classement comparables
+
+La recherche et YQL exposent six profils : deux références BM25, titre renforcé, contributions saturées, couverture et proximité. Le bouton de comparaison affiche leurs tops de cinq résultats ; chaque résultat peut détailler ses contributions et les features Vespa. Les profils positionnels reclassent 50 candidats par nœud. Le catalogue est disponible sur `/api/rankings` et les mesures d’observabilité distinguent les profils. Voir [les formules, leur coût et leurs limites](docs/vespa.md). Aucun gain de pertinence n’est revendiqué sans nouvelle évaluation annotée.
