@@ -32,6 +32,7 @@ jobs:
       - run: python3 scripts/check_analytics.py
       - run: python3 scripts/smoke.py
       - run: python3 scripts/check_lab.py
+      - run: python3 scripts/check_observability.py
       - run: POC_URL=http://localhost python3 scripts/smoke.py
       - if: failure()
         run: DEMO_HOST=localhost docker compose -f compose.yaml -f compose.http.yaml -f compose.small.yaml logs --no-color --tail=150

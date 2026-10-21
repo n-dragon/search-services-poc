@@ -10,6 +10,7 @@ from typing import Literal
 from pydantic import BaseModel,ConfigDict,Field
 from app.sources import ALL_CORPORA
 from app.backend import SearchUnavailable
+from app.observability import engine_span
 
 YQLScenario=Literal['search','title','count']
 GraphScenario=Literal['relations','two_hops','peers','counts']
@@ -99,7 +100,7 @@ def compile_query(request):
 
 def execute(request,backend):
     plan=compile_query(request)
-    if not slots.acquire(blocking=False):raise SearchUnavailable('Laboratoire occupé : deux exécutions sont déjà en cours.')
+    if not slots.acquire(blocking=False):raise SearchUnavailable('Laboratoire occupé : deux exécutions sont déjà en cours.', 'busy')
     start=time.perf_counter()
     try:
         if request.engine=='yql':
@@ -117,9 +118,10 @@ def execute(request,backend):
                   'provenance':{'pipeline':'multi-source-fr-v4','snapshot':'Corpus vivant, non atomique ; provenance dans chaque résultat.'}}
         else:
             try:
-                result=subprocess.run([sys.executable,'-m','app.graph_query'],input=plan['query_text'],text=True,capture_output=True,timeout=3,check=True)
+                with engine_span():
+                    result=subprocess.run([sys.executable,'-m','app.graph_query'],input=plan['query_text'],text=True,capture_output=True,timeout=3,check=True)
                 data=json.loads(result.stdout)
-            except subprocess.TimeoutExpired as exc:raise SearchUnavailable('Délai SPARQL dépassé : processus arrêté après 3 secondes.') from exc
+            except subprocess.TimeoutExpired as exc:raise SearchUnavailable('Délai SPARQL dépassé : processus arrêté après 3 secondes.', 'timeout') from exc
             except (subprocess.CalledProcessError,ValueError) as exc:raise SearchUnavailable('Exécution du graphe temporairement indisponible.') from exc
             data['provenance']=graph_info()
         return {**plan,**data,'elapsed_ms':round((time.perf_counter()-start)*1000,2)}

@@ -3,13 +3,16 @@ import os
 import re
 import httpx
 from app.sources import ALL_CORPORA
+from app.observability import engine_span
 
 RANKINGS = {"lexical", "lexical-balanced"}
 
 CORPUS_VERSION = "multi-source-fr-v4"
 
 class SearchUnavailable(Exception):
-    pass
+    def __init__(self, message, reason='unavailable'):
+        super().__init__(message)
+        self.reason = reason
 
 class VespaBackend:
     def __init__(self, client=None):
@@ -21,13 +24,25 @@ class VespaBackend:
         )
 
     def _request(self, path, params=None):
+        with engine_span():
+            return self._perform_request(path, params)
+
+    def _perform_request(self, path, params=None):
         try:
             response = self.client.get(path, params=params)
             response.raise_for_status()
             data = response.json()
-            if data.get("root", {}).get("errors"):
-                raise SearchUnavailable("Vespa reported a query error")
+            errors = data.get("root", {}).get("errors")
+            if errors:
+                # Vespa error code 12 denotes a query timeout. Never retain messages.
+                reason = 'timeout' if any(e.get('code') == 12 for e in errors) else 'unavailable'
+                raise SearchUnavailable("Vespa reported a query error", reason)
             return data
+        except httpx.TimeoutException as exc:
+            raise SearchUnavailable("Search backend timeout", 'timeout') from exc
+        except httpx.HTTPStatusError as exc:
+            reason = 'timeout' if exc.response.status_code == 504 else 'unavailable'
+            raise SearchUnavailable("Search backend unavailable", reason) from exc
         except (httpx.HTTPError, ValueError) as exc:
             raise SearchUnavailable("Search backend unavailable") from exc
 

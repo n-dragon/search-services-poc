@@ -226,9 +226,12 @@ class Store:
               create table if not exists source_runs(source text primary key,status text not null,count integer not null default 0,last_attempt real,last_success real,error text,next_attempt real not null default 0,failures integer not null default 0);
               create table if not exists source_batches(source text primary key,documents text not null);
               create table if not exists source_items(source text,id text,primary key(source,id));
+              create table if not exists source_metrics(source text primary key,writes integer not null default 0,deletes integer not null default 0,errors integer not null default 0,since real not null,last_duration_seconds real);
+              create table if not exists source_state(key text primary key,value real not null);
             ''')
             for source in SOURCES:
                 db.execute('insert or ignore into source_runs(source,status) values (?,?)',(source,'waiting'))
+                db.execute('insert or ignore into source_metrics(source,since) values (?,?)',(source,time.time()))
 
     @contextmanager
     def connect(self):
@@ -240,6 +243,17 @@ class Store:
     def due(self):
         with self.connect() as db:
             return db.execute('select * from source_runs where next_attempt<=? order by next_attempt,source',(time.time(),)).fetchall()
+
+    def heartbeat(self):
+        with self.connect() as db:
+            db.execute("insert into source_state values ('heartbeat',?) on conflict(key) do update set value=excluded.value",(time.time(),))
+
+    def acknowledged(self,source,deleted=False):
+        # Count acknowledged attempts, including idempotent writes replayed after a crash.
+        column = 'deletes' if deleted else 'writes'
+        with self.connect() as db:
+            db.execute(f'update source_metrics set {column}={column}+1 where source=?',(source,))
+            db.execute("insert into source_state values ('heartbeat',?) on conflict(key) do update set value=excluded.value",(time.time(),))
 
     def stage(self,source,documents):
         if not documents or len(documents)>MAX_RECORDS or len({d['card_id'] for d in documents})!=len(documents):
@@ -261,11 +275,13 @@ class Store:
         if documents is None: raise ValueError('No staged batch')
         for fields in documents:
             client.post(base+'/document/v1/poc/card/docid/'+fields['card_id'],json={'fields':fields}).raise_for_status()
+            self.acknowledged(source)
         current={d['card_id'] for d in documents}
         with self.connect() as db:
             obsolete={r[0] for r in db.execute('select id from source_items where source=?',(source,))}-current
         for identifier in obsolete:
             client.delete(base+'/document/v1/poc/card/docid/'+identifier).raise_for_status()
+            self.acknowledged(source,deleted=True)
         with self.connect() as db:
             db.execute('delete from source_items where source=?',(source,))
             db.executemany('insert into source_items values (?,?)',[(source,d) for d in current])
@@ -273,6 +289,8 @@ class Store:
             db.execute('update source_runs set status=?,count=?,last_success=?,error=null,next_attempt=?,failures=0 where source=?',('ok',len(current),time.time(),time.time()+REFRESH,source))
 
     def cycle(self,source,client,connector=None):
+        start=time.perf_counter()
+        self.heartbeat()
         with self.connect() as db:
             db.execute('update source_runs set status=?,last_attempt=? where source=?',('syncing',time.time(),source))
         try:
@@ -285,7 +303,12 @@ class Store:
                 failures=db.execute('select failures from source_runs where source=?',(source,)).fetchone()[0]+1
                 delay=REFRESH if isinstance(exc,NeedsKey) else min(3600,60*2**min(failures,6))
                 db.execute('update source_runs set status=?,error=?,next_attempt=?,failures=? where source=?',('needs_key' if isinstance(exc,NeedsKey) else 'error',error,time.time()+delay,failures,source))
+                if not isinstance(exc,NeedsKey):
+                    db.execute('update source_metrics set errors=errors+1 where source=?',(source,))
             logging.warning('Source %s: %s',source,error)
+        finally:
+            with self.connect() as db:
+                db.execute('update source_metrics set last_duration_seconds=? where source=?',(time.perf_counter()-start,source))
 
 
 def main():
@@ -294,6 +317,7 @@ def main():
     store=Store(database_path())
     with httpx.Client(timeout=30,headers={'User-Agent':AGENT},trust_env=False) as client:
         while True:
+            store.heartbeat()
             for row in store.due():
                 store.cycle(row['source'],client)
                 time.sleep(2)

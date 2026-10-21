@@ -3,6 +3,8 @@ from contextlib import closing
 import os
 from pathlib import Path
 import sqlite3
+import time
+import json
 
 SOURCES = {
  'wikidata': ('Wikidata', 'Entités scientifiques et informatiques sélectionnées'),
@@ -26,15 +28,31 @@ def database_path():
 
 def status():
     records = {}
+    metrics, pending, heartbeat = {}, {}, None
     path = Path(database_path())
     if path.exists():
         try:
             with closing(sqlite3.connect(f'{path.as_uri()}?mode=ro', uri=True, timeout=2)) as db:
                 db.row_factory = sqlite3.Row
                 records = {r['source']: dict(r) for r in db.execute('select * from source_runs')}
-        except sqlite3.Error:
+                pending = {r['source']: len(json.loads(r['documents']))
+                    for r in db.execute('select source,documents from source_batches')}
+                tables = {r[0] for r in db.execute("select name from sqlite_master where type='table'")}
+                if 'source_metrics' in tables:
+                    metrics = {r['source']: dict(r) for r in db.execute('select * from source_metrics')}
+                if 'source_state' in tables:
+                    row = db.execute("select value from source_state where key='heartbeat'").fetchone()
+                    heartbeat = row[0] if row else None
+        except (sqlite3.Error, ValueError, OSError):
             return {'state': 'unavailable', 'sources': []}
-    return {'state': 'available' if records else 'waiting', 'sources': [
+    return {'state': 'available' if records else 'waiting',
+        'metrics_available': bool(metrics), 'heartbeat': heartbeat,
+        'heartbeat_age_seconds': max(0,time.time()-heartbeat) if heartbeat else None,
+        'pending_batches': len(pending),
+        **{name: sum(row.get(name,0) for row in metrics.values()) if metrics else None
+            for name in ('writes','deletes','errors')},
+        'sources': [
         {'source': key, 'name': name, 'scope': scope, 'limit': 50,
          'status': 'waiting', 'count': 0, 'last_success': None, 'error': None,
-         **records.get(key, {})} for key, (name, scope) in SOURCES.items()]}
+         **records.get(key, {}), 'pending_documents': pending.get(key,0),
+         'measurements': metrics.get(key)} for key, (name, scope) in SOURCES.items()]}

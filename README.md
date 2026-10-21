@@ -122,3 +122,7 @@ Le profil `live` ajoute des échantillons quotidiens Wikidata, UniProt, OpenAlex
 ### Laboratoire YQL et SPARQL
 
 `/lab` présente sept scénarios exécutés réellement, leurs requêtes et paramètres, les résultats et la provenance. YQL interroge Vespa ; SPARQL utilise un petit instantané Wikidata local versionné. Les outils MCP `query_index` et `query_graph` appliquent les mêmes modèles et limites que HTTP. Voir [le contrat d’admission et ses limites](docs/query-lab.md).
+
+### Observabilité des requêtes et de l’indexation
+
+`/observability` affiche les mesures HTTP/MCP, p50/p95/p99, refus, erreurs et derniers appels, ainsi que les files, reprises, débits d’acquittement et états des collecteurs. Aucun texte de requête ni donnée de visiteur n’est conservé. Voir [le périmètre, la rétention et les limites](docs/observability.md). Les API JSON et compteurs Prometheus sont accessibles depuis la page.

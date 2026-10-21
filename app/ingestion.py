@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 import sqlite3
 import time
+from app.observability import percentile
 
 
 def database_path():
@@ -23,6 +24,8 @@ def snapshot():
             state = dict(db.execute('select key,value from state'))
             pages = db.execute('select count(*),sum(active) from pages').fetchone()
             pending = db.execute('select count(*),min(created) from pending').fetchone()
+            retries = db.execute('select count(*) from pending where attempts>0').fetchone()[0]
+            lags = [r[0] for r in db.execute('select lag_seconds from pages where indexed_at>=?', (time.time()-900,))]
             recent = [dict(r) for r in db.execute(
                 'select title,page_id,revision,indexed_at,lag_seconds,active from pages '
                 'where indexed_at>0 order by indexed_at desc limit 8')]
@@ -31,6 +34,9 @@ def snapshot():
         return {**empty, 'state': 'running' if now-heartbeat < 45 else 'stopped',
                 'tracked': pages[0], 'indexed': pages[1] or 0, 'pending': pending[0],
                 'oldest_pending_seconds': round(max(0, now-pending[1]), 1) if pending[1] else 0,
+                'retrying': retries, 'heartbeat_age_seconds': max(0,now-heartbeat) if heartbeat else None,
+                'queue_lag': {'sample_count': len(lags), 'p50_seconds': percentile(lags,50),
+                    'p95_seconds': percentile(lags,95)},
                 'limit': int(state.get('limit', 2000)), 'recent': recent,
                 'stream_connected': state.get('stream_connected') == '1' and now-heartbeat < 45,
                 'last_stream_event': float(state.get('last_stream_event', 0)),

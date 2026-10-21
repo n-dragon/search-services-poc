@@ -63,6 +63,7 @@ jobs:
           fi
           python3 scripts/smoke.py
           python3 scripts/check_lab.py
+          python3 scripts/check_observability.py
           python3 scripts/check_wikipedia.py
           python3 scripts/check_sources.py
           printf '### Demo verified\n\nURL: %s\n\nCommit: `%s`\n' "$POC_URL" "$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
