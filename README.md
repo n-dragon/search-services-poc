@@ -82,6 +82,12 @@ See [the frozen-corpus evaluation protocol](evaluation/README.md): 40 predeclare
 
 `/benchmark` présente six expériences proposées : diagnostic par étape, comparaison à budget égal, validation des preuves, transfert vers OfficeQA Pro V2, robustesse et répétabilité. La page détaille les métriques, le rapport attendu par question et une extension de navigation par concepts. Les priorités peuvent être filtrées. Ce contenu est un protocole ; aucune campagne FinanceBench, OfficeQA ou de boucle LLM n’a été exécutée dans le POC. Le smoke test vérifie la publication de la page et de ses six pistes.
 
+### Exécuter le pilote sur la VM
+
+Le workflow manuel **Benchmark demo VM** exécute `python3 -m scripts.agentic_benchmark_vm` par SSH sur la VM, après les tests. Le script utilise l’API sur `localhost:8000` : cinq requêtes de développement préexistantes, trois profils lexicaux et cinq répétitions, soit 75 recherches mesurées, plus amorçage et contrôles. Il conserve les documents lus, leurs empreintes, les rangs et les durées, vérifie les refus d’entrées invalides et relève les prérequis disponibles sans publier de secrets.
+
+Les rapports sont conservés dans `~/search-services-poc/benchmark-results/` et en artifact Actions. Ce pilote est en lecture seule, sans appel LLM ni API payante. Les scores QA et de citations restent non évalués. Le sous-corpus des dix fiches est contrôlé avant et après ; l’index Vespa global reste vivant et ses statistiques BM25 ne sont pas figées. Le rapport distingue explicitement expériences partielles et expériences bloquées ; il ne constitue pas une campagne FinanceBench ou OfficeQA.
+
 ## Architecture and trade-offs
 
 ```mermaid
