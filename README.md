@@ -78,6 +78,10 @@ See [Vespa configuration and measurement protocol](docs/vespa.md) for field stor
 
 See [the frozen-corpus evaluation protocol](evaluation/README.md): 40 predeclared French queries, intent-level dev/test separation, blind 0–3 annotation and nDCG@10 / Precision@5 / pooled Recall@10. The manual **Evaluate frozen relevance corpus** workflow captures the live corpus read-only, replays it on an isolated runner and produces the annotation kit. Unfilled judgments never count as irrelevant; no human relevance scores are claimed before annotation.
 
+### Benchmark agentique : pistes d’amélioration
+
+`/benchmark` présente six expériences proposées : diagnostic par étape, comparaison à budget égal, validation des preuves, transfert vers OfficeQA Pro V2, robustesse et répétabilité. La page détaille les métriques, le rapport attendu par question et une extension de navigation par concepts. Les priorités peuvent être filtrées. Ce contenu est un protocole ; aucune campagne FinanceBench, OfficeQA ou de boucle LLM n’a été exécutée dans le POC. Le smoke test vérifie la publication de la page et de ses six pistes.
+
 ## Architecture and trade-offs
 
 ```mermaid

@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Six pistes pour évaluer une recherche agentique : diagnostic des erreurs, budget, preuves, généralisation, robustesse et répétabilité.">
+<title>Benchmark agentique · Laboratoire de recherche</title>
+<style>
+:root{font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:#162f38;background:#f7f9f8;--accent:#0c7564;--muted:#62767b;--line:#dce6e2}*{box-sizing:border-box}body{margin:0}a{color:var(--accent);text-underline-offset:4px}button{font:inherit;cursor:pointer;touch-action:manipulation}a,button,summary{touch-action:manipulation}:focus-visible{outline:3px solid #e7a44e;outline-offset:4px}[hidden]{display:none!important}.shell{width:min(1180px,100% - 48px);margin:auto}header{background:white;border-bottom:1px solid var(--line)}header .shell{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:86px;flex-wrap:wrap;padding-block:16px}.brand{font-weight:750;text-decoration:none;color:#162f38;letter-spacing:-.5px}.brand span{color:var(--accent)}nav{display:flex;gap:6px;flex-wrap:wrap}nav a{padding:10px 12px;text-decoration:none;border-radius:7px;color:var(--muted);font-size:14px}nav a[aria-current=page]{background:#e9f3ee;color:var(--accent);font-weight:650}.repo,.small{font-size:12px}.hero{padding:58px 0 26px}.eyebrow{font:700 11px ui-monospace,monospace;letter-spacing:2px;text-transform:uppercase;color:var(--accent)}h1{font-size:clamp(36px,5.2vw,60px);line-height:1.1;letter-spacing:-2.3px;max-width:850px;margin:20px 0}h2{font-size:24px;letter-spacing:-.6px}h3{font-size:19px;line-height:1.4;letter-spacing:-.3px}p,li{line-height:1.75;color:var(--muted)}.lead{font-size:17px;max-width:800px}.status{display:inline-block;font:12px ui-monospace,monospace;color:#6c5325;background:#fff4dd;border:1px solid #edd7ad;border-radius:6px;padding:8px 11px}.note{border-left:3px solid var(--accent);background:#edf5f0;padding:17px 21px;border-radius:0 8px 8px 0;font-size:14px;line-height:1.7;color:#3a6054}.section{margin:36px 0}.section-heading{display:flex;justify-content:space-between;gap:20px;align-items:baseline;flex-wrap:wrap}.section-heading p{margin-top:0}.filters{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 12px}.filters button{border:1px solid var(--line);background:white;color:var(--muted);padding:10px 15px;border-radius:7px;font-size:13px}.filters button[aria-pressed=true]{color:white;background:var(--accent);border-color:var(--accent)}.count{font:12px ui-monospace,monospace;min-height:24px;color:var(--muted)}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:14px}.card,.panel{background:white;border:1px solid var(--line);border-radius:12px;padding:25px}.card h3{margin:12px 0}.card p,.card li,.panel p,.panel li{font-size:14px}.card ul,.panel ul{padding-left:21px}.tag{font:11px ui-monospace,monospace;color:var(--accent);letter-spacing:.7px}.metric{background:#f1f6f3;border-radius:7px;padding:13px 15px;margin:18px 0 0;font-size:13px;line-height:1.7}.metric strong{display:block;margin-bottom:4px}.card details{border-top:1px solid var(--line);margin-top:18px;padding-top:15px}.card summary{font-size:13px;color:var(--accent);cursor:pointer;line-height:1.5}.card details p{margin-bottom:0}.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}.step{background:#edf5f0;border:1px solid #d0e2d8;border-radius:8px;padding:17px}.step strong{display:block;font-size:14px}.step span{display:block;font-size:12px;color:var(--muted);line-height:1.65;margin-top:8px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;vertical-align:top;padding:13px 12px;border-bottom:1px solid var(--line);line-height:1.7}th{font-weight:600}td{color:var(--muted)}code{font:12px ui-monospace,monospace;overflow-wrap:anywhere}.sources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.sources a{display:block;font-weight:600;font-size:14px}.sources p{font-size:13px;margin-bottom:0}.footer{border-top:1px solid var(--line);padding:25px 0;margin-top:48px;color:var(--muted);font-size:12px}.footer .shell{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+@media(max-width:850px){.cards,.sources{grid-template-columns:1fr}.steps{grid-template-columns:repeat(2,minmax(0,1fr))}.shell{width:calc(100% - 32px)}.hero{padding-top:34px}.repo{display:none}.card,.panel{padding:20px}h1{letter-spacing:-1.5px}nav a{padding:9px 10px}}
+@media(max-width:440px){.steps{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="shell"><a class="brand" href="/#search">Laboratoire <span>de recherche.</span></a><nav aria-label="Navigation principale"><a href="/#search">Recherche</a><a href="/lab">YQL &amp; SPARQL</a><a href="/observability">Observabilité</a><a href="/benchmark" aria-current="page">Benchmark agentique</a><a href="/#architecture">Architecture</a></nav><a class="repo" href="https://github.com/n-dragon/search-services-poc">Code ↗</a></div></header>
+<main class="shell">
+<section class="hero" aria-labelledby="page-title">
+<div class="eyebrow">04 / Protocole d’évaluation</div>
+<h1 id="page-title">Mesurer les gains.<br>Expliquer les échecs.</h1>
+<p class="lead">Six expériences pour évaluer la recherche agentique : comprendre ce que l’agent trouve, ce qu’il lit, ce qu’il peut prouver et le coût nécessaire pour répondre.</p>
+<p><span class="status">Protocole proposé · 24 octobre 2026</span></p>
+<div class="note" id="campaign-status">Les pistes ci-dessous sont un plan d’évaluation. Aucune campagne FinanceBench, OfficeQA ou de boucle LLM n’a été exécutée dans ce laboratoire. Les <a href="/observability">mesures de service</a> et le <a href="https://github.com/n-dragon/search-services-poc/tree/main/evaluation">protocole de pertinence lexicale</a> ont leur propre périmètre.</div>
+</section>
+
+<section class="section panel" aria-labelledby="baseline-title">
+<h2 id="baseline-title">Partir de la comparaison déjà publiée</h2>
+<p>Mistral compare déjà trois configurations : recherche en un passage, boucle de recherche seule et boucle avec navigation. Les extensions proposées ici approfondissent ce protocole ; elles ne décrivent pas les évaluations internes de Mistral.</p>
+<div class="steps" aria-label="Étapes à observer dans chaque exécution">
+<div class="step"><strong>01 · Extraire</strong><span>Les valeurs, unités et tableaux sont-ils correctement représentés ?</span></div>
+<div class="step"><strong>02 · Retrouver</strong><span>Les documents contenant les preuves sont-ils accessibles à l’agent ?</span></div>
+<div class="step"><strong>03 · Inspecter</strong><span>Les passages nécessaires ont-ils réellement été lus ?</span></div>
+<div class="step"><strong>04 · Répondre</strong><span>La conclusion et les calculs sont-ils soutenus par les preuves ?</span></div>
+</div>
+<a class="small" href="https://mistral.ai/news/agentic-search/">Lire le benchmark publié par Mistral ↗</a>
+</section>
+
+<section class="section" aria-labelledby="priorities-title">
+<div class="section-heading"><h2 id="priorities-title">Les six pistes d’amélioration</h2><p class="small">P0 : comprendre le gain · P1 : vérifier sa portée</p></div>
+<div class="filters" role="group" aria-label="Filtrer les pistes par priorité">
+<button type="button" data-filter="all" aria-pressed="true">Toutes les pistes</button>
+<button type="button" data-filter="P0" aria-pressed="false">P0 · Diagnostic et comparaison</button>
+<button type="button" data-filter="P1" aria-pressed="false">P1 · Généralisation et fiabilité</button>
+</div>
+<div class="count" id="visible-count" role="status" aria-live="polite">6 pistes affichées</div>
+<div class="cards" id="benchmark-priorities">
+
+<article class="card" id="diagnostic" data-priority="P0">
+<span class="tag">P0 / 01</span><h3>Localiser les échecs</h3>
+<p>Une réponse fausse ne dit pas à quelle étape intervenir. Comparer plusieurs entrées avec le même modèle et les mêmes outils complémentaires.</p>
+<ul><li>Exécution normale sur le corpus complet.</li><li>Pages de référence fournies directement : diagnostic du retrieval.</li><li>Pages extraites, puis texte de référence vérifié : diagnostic du parsing et du raisonnement.</li></ul>
+<div class="metric"><strong>Mesurer</strong>Réussite par configuration, erreurs OCR ou d’unité, documents retrouvés, passages lus et erreurs de calcul.</div>
+<details><summary>Interpréter les écarts</summary><p>Un succès avec les preuves fournies suggère une piste côté accès aux preuves ; un échec persistant appelle une inspection de l’extraction, du raisonnement ou du jugement. Les configurations « oracle » sont diagnostiques et ne participent pas au classement principal. Cette méthode reprend les ablations de l’étude OfficeQA.</p></details>
+</article>
+
+<article class="card" id="budget" data-priority="P0">
+<span class="tag">P0 / 02</span><h3>Comparer à budget égal</h3>
+<p>Tracer les résultats en fonction du temps et du coût disponibles, avec une référence RAG optimisée : recherche hybride, reranking et contexte adapté.</p>
+<ul><li>Figer modèle, corpus, extraction, index et réglages hors variante étudiée.</li><li>Documenter l’accès au web, au calcul et à l’exécution de code.</li><li>Publier les limites de temps, tokens et appels ainsi que les dépassements.</li></ul>
+<div class="metric"><strong>Mesurer</strong>Exactitude, latence p50/p95, coût total et coût par réponse correcte = coût de toutes les exécutions / nombre de réponses correctes.</div>
+<details><summary>Inclure le travail en amont</summary><p>Déclarer séparément OCR, embeddings, construction d’index ou de graphe, puis amortir ces coûts sur un volume de questions explicite. Le coût par réponse correcte est non défini si aucune réponse n’est correcte. Les échecs et timeouts restent comptabilisés.</p></details>
+</article>
+
+<article class="card" id="evidence" data-priority="P0">
+<span class="tag">P0 / 03</span><h3>Évaluer les preuves</h3>
+<p>Distinguer l’exactitude de la réponse, la qualité des citations et la couverture des éléments nécessaires pour la justifier.</p>
+<ul><li>Relier chaque affirmation vérifiable à son passage source.</li><li>Vérifier valeur, unité, période et périmètre.</li><li>Accepter des preuves alternatives après validation.</li></ul>
+<div class="metric"><strong>Mesurer</strong>Citations qui soutiennent l’affirmation / citations vérifiées ; éléments de preuve couverts / éléments attendus et validés.</div>
+<details><summary>Utiliser les annotations disponibles</summary><p>FinanceBench fournit des extraits et pages de référence. Ils amorcent l’évaluation sans constituer nécessairement la liste exhaustive des preuves valides. Une preuve non annotée reste « à vérifier », et ne devient pas automatiquement incorrecte. La réponse et ses citations gardent des scores distincts.</p></details>
+</article>
+
+<article class="card" id="generalization" data-priority="P1">
+<span class="tag">P1 / 04</span><h3>Tester le transfert</h3>
+<p>Régler une configuration sur OfficeQA Pro, la figer, puis l’évaluer sur OfficeQA Pro V2 sans réajustement sur les résultats de test.</p>
+<ul><li>V2 apporte 90 questions sur un autre corpus de documents financiers.</li><li>Conserver séparément réglage, validation et test final.</li><li>Compléter ensuite avec manuels, contrats ou documents multilingues.</li></ul>
+<div class="metric"><strong>Mesurer</strong>Gain par corpus, type de question, format de document et nombre de sources nécessaires.</div>
+<details><summary>Garder un vrai test final</summary><p>Si V2 sert à régler les paramètres, il devient à son tour un jeu de développement. Prévoir alors de nouvelles questions tenues à l’écart. Les réponses de référence doivent rester inaccessibles à l’agent pendant l’exécution.</p></details>
+</article>
+
+<article class="card" id="robustness" data-priority="P1">
+<span class="tag">P1 / 05</span><h3>Ajouter des situations difficiles</h3>
+<p>Créer des variantes annotées où les informations sont absentes, proches mais non pertinentes, contradictoires ou corrigées dans une version ultérieure.</p>
+<ul><li>Question sans réponse et question répondable avec vocabulaire différent.</li><li>Même entité, autre période ou unité ; tableaux perturbés par OCR.</li><li>Document ajouté, corrigé ou supprimé, avec état de l’index vérifié.</li></ul>
+<div class="metric"><strong>Mesurer</strong>Abstentions justifiées, abstentions à tort, affirmations non soutenues et sélection de la version attendue.</div>
+<details><summary>Éviter un score trompeur</summary><p>Ne pas récompenser un système qui refuse toutes les questions. Publier séparément les résultats des cas répondables et non répondables. Chaque modification de document exige une réponse de référence et une provenance adaptées à cette variante.</p></details>
+</article>
+
+<article class="card" id="stability" data-priority="P1">
+<span class="tag">P1 / 06</span><h3>Mesurer la stabilité</h3>
+<p>Répéter chaque question, conserver les résultats individuels et publier les incertitudes sur les différences entre configurations.</p>
+<ul><li>Prévoir 3 à 5 répétitions par question pour une première campagne.</li><li>Comparer les configurations sur les mêmes questions ; tenir compte des documents partagés.</li><li>Figer versions du modèle, prompts, outils, corpus, index et juge.</li></ul>
+<div class="metric"><strong>Mesurer</strong>Variation entre répétitions, différence appariée avec intervalle de confiance, questions gagnées et questions qui régressent.</div>
+<details><summary>Rendre la campagne reproductible</summary><p>Exporter le manifeste du corpus et ses empreintes, les paramètres de génération, l’ordre d’exécution et les états de cache. Sur un petit jeu, une variation de quelques réponses peut déplacer le score agrégé : conserver les traces permet de comprendre ces écarts.</p></details>
+</article>
+</div>
+</section>
+
+<section class="section panel" id="concepts" aria-labelledby="concepts-title">
+<div class="tag">EXTENSION / Navigation par concepts</div>
+<h2 id="concepts-title">Relier les notions et leurs preuves</h2>
+<p>Ajouter des questions qui exigent de relier des synonymes, changements de noms ou relations entre entités. Exemple de tâche : retrouver une même notion à travers plusieurs conventions de nommage et justifier le lien entre les sources.</p>
+<p>Comparer navigation documentaire et navigation dans un graphe sur le même corpus, avec des budgets explicites et le coût de construction du graphe inclus. Mesurer l’exactitude des relations et leur justification par des passages sources ; un graphe n’implique pas à lui seul un gain.</p>
+<a class="small" href="/lab">Explorer le laboratoire YQL et SPARQL ↗</a>
+</section>
+
+<section class="section panel" id="question-report" aria-labelledby="report-title">
+<h2 id="report-title">Un rapport par question</h2>
+<p>Le premier livrable proposé relie le benchmark à l’observabilité. Ce tableau décrit les champs à collecter ; il ne contient pas de résultats d’exécution.</p>
+<div class="table-wrap"><table><thead><tr><th>Champ</th><th>Contenu attendu</th></tr></thead><tbody>
+<tr><td><code>question_id · run_id</code></td><td>Question, répétition et configuration comparée.</td></tr>
+<tr><td><code>corpus_hash · config_hash</code></td><td>Instantané du corpus, versions du modèle et des outils, prompts et réglages.</td></tr>
+<tr><td><code>tool_calls</code></td><td>Outils appelés, documents et passages retournés, durées et erreurs ; pas de chaîne de pensée interne.</td></tr>
+<tr><td><code>evidence_coverage</code></td><td>Éléments nécessaires effectivement lus, avec références validées. Non évalué si les annotations manquent.</td></tr>
+<tr><td><code>citation_support · answer_correct</code></td><td>Qualité des citations et exactitude évaluées séparément.</td></tr>
+<tr><td><code>redundant_reads</code></td><td>Passages déjà vus, distingués des relectures utiles à une vérification.</td></tr>
+<tr><td><code>tokens · duration · cost</code></td><td>Consommation réelle, temps total, coût et budget dépassé, y compris lors des échecs.</td></tr>
+<tr><td><code>failure_category</code></td><td>Extraction, retrieval, navigation, raisonnement, calcul, jugement ou « à diagnostiquer » ; attribution vérifiée.</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="section" id="references" aria-labelledby="references-title">
+<h2 id="references-title">Sources et points de départ</h2>
+<div class="sources">
+<div class="panel"><a href="https://mistral.ai/news/agentic-search/">Mistral · Introducing Agentic Search ↗</a><p>Protocole publié et comparaison des boucles de recherche.</p></div>
+<div class="panel"><a href="https://github.com/patronus-ai/financebench">FinanceBench · données et annotations ↗</a><p>Questions, réponses et passages de référence.</p></div>
+<div class="panel"><a href="https://github.com/databricks/officeqa">OfficeQA · Pro, Full et Pro V2 ↗</a><p>Corpus, formats des jeux et code d’évaluation.</p></div>
+<div class="panel"><a href="https://proceedings.colm.cc/paper_files/paper/2026/file/e43f900f571de6c96a70d5724a0fb565-Paper-Conference.pdf">Étude OfficeQA Pro · COLM 2026 ↗</a><p>Ablations sur les pages de référence, le parsing et les agents.</p></div>
+</div>
+</section>
+</main>
+<footer class="footer"><div class="shell"><span>Laboratoire indépendant · protocole proposé, campagnes à réaliser.</span><a href="/observability">Consulter les mesures réelles du service ↗</a></div></footer>
+<script>
+const filterButtons = [...document.querySelectorAll('[data-filter]')];
+const cards = [...document.querySelectorAll('[data-priority]')];
+for (const button of filterButtons) {
+  button.addEventListener('click', () => {
+    const selected = button.dataset.filter;
+    let count = 0;
+    for (const card of cards) {
+      card.hidden = selected !== 'all' && card.dataset.priority !== selected;
+      if (!card.hidden) count += 1;
+    }
+    for (const item of filterButtons) item.setAttribute('aria-pressed', String(item === button));
+    document.getElementById('visible-count').textContent = `${count} pistes affichées`;
+  });
+}
+</script>
+</body>
+</html>

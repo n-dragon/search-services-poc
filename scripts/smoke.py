@@ -85,6 +85,14 @@ def main():
     else:
         raise AssertionError("Private analytics API must not be mounted on the public app")
     assert 'lang="fr"' in page
+    assert 'href="/benchmark"' in page
+    with urllib.request.urlopen(BASE + '/benchmark', timeout=10) as response:
+        benchmark = response.read().decode()
+    assert 'Protocole proposé' in benchmark and 'Aucune campagne FinanceBench' in benchmark
+    for section in ('diagnostic', 'budget', 'evidence', 'generalization', 'robustness',
+                    'stability', 'concepts', 'question-report', 'references'):
+        assert f'id="{section}"' in benchmark, section
+    assert benchmark.count('data-priority=') == 6
     result = get("/api/search?" + urllib.parse.urlencode({"q": "réplication"}))
     assert result['hits'], result
     check_rankings()

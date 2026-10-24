@@ -160,6 +160,11 @@ def observability_page():
     return Path(__file__).with_name('observability.html').read_text()
 
 
+@app.get('/benchmark', response_class=HTMLResponse)
+def benchmark_page():
+    return Path(__file__).with_name('benchmark.html').read_text()
+
+
 @app.get('/api/observability')
 def observability():
     return {'generated_at': time.time(), 'queries': query_measurements.snapshot(),

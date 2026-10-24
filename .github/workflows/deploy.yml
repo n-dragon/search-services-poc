@@ -1,6 +1,10 @@
 name: Deploy demo VM
 on:
   workflow_dispatch:
+  # One-off publication of the benchmark page; removed after this deployment.
+  push:
+    branches: [main]
+    paths: [app/benchmark.html]
 permissions:
   contents: read
 concurrency:
