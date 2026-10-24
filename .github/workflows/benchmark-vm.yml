@@ -1,10 +1,6 @@
 name: Benchmark demo VM
 on:
   workflow_dispatch:
-  # One-off run requested for this runner; restored to manual after dispatch.
-  push:
-    branches: [main]
-    paths: [scripts/agentic_benchmark_vm.py]
 permissions:
   contents: read
 concurrency:
