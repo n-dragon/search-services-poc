@@ -1,9 +1,6 @@
 name: Diagnose FinanceBench on demo VM
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['scripts/financebench_diagnostic.py']
 permissions:
   contents: read
 concurrency:
