@@ -1,0 +1,83 @@
+name: Diagnose FinanceBench on demo VM
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['scripts/financebench_diagnostic.py']
+permissions:
+  contents: read
+concurrency:
+  group: demo-vm-benchmark
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: python -m pytest -q
+  diagnose:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: demo
+    env:
+      SSH_HOST: ${{ vars.SSH_HOST || '51.195.137.119' }}
+      SSH_USER: ${{ vars.SSH_USER || 'ubuntu' }}
+      SSH_PORT: ${{ vars.SSH_PORT || '22' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure pinned SSH credentials
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          test -n "$SSH_PRIVATE_KEY" || { echo 'Missing SSH_PRIVATE_KEY secret'; exit 1; }
+          test -n "$SSH_KNOWN_HOSTS" || { echo 'Missing SSH_KNOWN_HOSTS secret'; exit 1; }
+          [[ "$SSH_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ ]] || exit 1
+          [[ "$SSH_USER" =~ ^[a-z_][a-z0-9_-]*$ ]] || exit 1
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ ]] || exit 1
+          install -m 700 -d "$RUNNER_TEMP/financebench-ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$RUNNER_TEMP/financebench-ssh/key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$RUNNER_TEMP/financebench-ssh/known_hosts"
+          chmod 600 "$RUNNER_TEMP/financebench-ssh/"*
+      - name: Check named model and dataset credentials without exposing values
+        env:
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+          GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import os
+          with open(os.environ['GITHUB_ENV'], 'a') as stream:
+              for label, key in [('MISTRAL','MISTRAL_API_KEY'),('GLM','GLM_API_KEY'),('HF','HF_TOKEN')]:
+                  stream.write(f"BENCHMARK_GHA_{label}_CONFIGURED={str(bool(os.getenv(key))).lower()}\n")
+          PY
+      - name: Execute isolated PDF and retrieval diagnostic on the VM
+        run: |
+          set -euo pipefail
+          ssh_options=(-i "$RUNNER_TEMP/financebench-ssh/key" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/financebench-ssh/known_hosts" -o ConnectTimeout=15)
+          ssh "${ssh_options[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" 'mkdir -p ~/search-services-poc/evaluation ~/search-services-poc/scripts; if ! command -v pdftotext >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends poppler-utils; fi'
+          scp "${ssh_options[@]}" -P "$SSH_PORT" scripts/financebench_diagnostic.py scripts/agentic_benchmark_vm.py "$SSH_USER@$SSH_HOST:search-services-poc/scripts/"
+          scp "${ssh_options[@]}" -P "$SSH_PORT" evaluation/financebench-manifest.json "$SSH_USER@$SSH_HOST:search-services-poc/evaluation/"
+          ssh "${ssh_options[@]}" -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "cd ~/search-services-poc && curl --fail --silent --output /dev/null http://localhost:8000/readyz && BENCHMARK_SOURCE_SHA=$GITHUB_SHA BENCHMARK_GHA_MISTRAL_CONFIGURED=$BENCHMARK_GHA_MISTRAL_CONFIGURED BENCHMARK_GHA_GLM_CONFIGURED=$BENCHMARK_GHA_GLM_CONFIGURED BENCHMARK_GHA_HF_CONFIGURED=$BENCHMARK_GHA_HF_CONFIGURED nice -n 10 ionice -c 2 -n 7 python3 -m scripts.financebench_diagnostic --output-dir benchmark-results/financebench-$GITHUB_SHA && curl --fail --silent --output /dev/null http://localhost:8000/readyz"
+          mkdir -p "$RUNNER_TEMP/financebench-report"
+          scp "${ssh_options[@]}" -P "$SSH_PORT" "$SSH_USER@$SSH_HOST:search-services-poc/benchmark-results/financebench-$GITHUB_SHA/financebench-latest.json" "$RUNNER_TEMP/financebench-report/"
+          scp "${ssh_options[@]}" -P "$SSH_PORT" "$SSH_USER@$SSH_HOST:search-services-poc/benchmark-results/financebench-$GITHUB_SHA/financebench-latest.md" "$RUNNER_TEMP/financebench-report/"
+      - name: Publish diagnostic summary
+        run: cat "$RUNNER_TEMP/financebench-report/financebench-latest.md" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: financebench-vm-diagnostic
+          path: ${{ runner.temp }}/financebench-report/
+          retention-days: 30
+      - name: Remove runner SSH credentials
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/financebench-ssh"
