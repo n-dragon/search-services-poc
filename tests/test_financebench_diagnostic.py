@@ -79,9 +79,18 @@ def test_checksum_and_manifest_path_checks_precede_network(tmp_path):
     with pytest.raises(ValueError, match='Unsafe'):
         bench.download_asset({'path': '../escaped.pdf', 'size': 1}, tmp_path, float('inf'))
     with pytest.raises(ValueError, match='size cap'):
-        bench.download_asset({'path': 'pdfs/large.pdf', 'size': 36_000_000}, tmp_path, float('inf'))
+        bench.download_asset({'path': 'pdfs/large.pdf', 'size': 41_000_000}, tmp_path, float('inf'))
 
 
 def test_small_company_symbols_do_not_match_inside_unrelated_words():
     assert bench.infer_company('What was the revenue?', ['AMD', '3M']) is None
     assert bench.infer_company('What was AMD revenue?', ['AMD', '3M']) == 'AMD'
+
+
+def test_all_pinned_files_fit_the_explicit_download_cap():
+    import json
+    from pathlib import Path
+    manifest = json.loads((Path(__file__).parents[1]/'evaluation/financebench-manifest.json').read_text())
+    assert len(manifest['files']) == 370
+    assert max(asset['size'] for asset in manifest['files']) == 38_484_035
+    assert all(0 < asset['size'] <= bench.MAX_ASSET_BYTES for asset in manifest['files'])

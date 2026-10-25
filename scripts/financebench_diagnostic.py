@@ -22,6 +22,7 @@ from scripts.agentic_benchmark_vm import configured_keys
 
 REVISION = 'cc39aeb4afdf33909ee1412188bf89035950c2eb'
 TOP_K = 5
+MAX_ASSET_BYTES = 40_000_000  # Largest pinned PDF: 38,484,035 bytes.
 STOP_WORDS = set('a an the of to in for and or is was are were does did do what how '
                  'much many which that this its it as at on by from with has have had '
                  'be been being can could would should please give response question '
@@ -53,7 +54,7 @@ def download_asset(asset, root, deadline):
     if relative.is_absolute() or '..' in relative.parts or relative.parts[0] not in ('pdfs', 'data'):
         raise ValueError('Unsafe dataset path')
     expected_size = asset['size']
-    if not 0 < expected_size <= 35_000_000:
+    if not 0 < expected_size <= MAX_ASSET_BYTES:
         raise ValueError('Dataset asset exceeds the predeclared size cap')
     path = root / relative
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -326,6 +327,8 @@ def run(project, output_dir, deadline_seconds=1500):
     manifest = json.loads(manifest_path.read_text())
     if manifest['revision'] != REVISION or len(manifest['files']) != 370:
         raise ValueError('Unexpected FinanceBench manifest')
+    if any(not 0 < asset['size'] <= MAX_ASSET_BYTES for asset in manifest['files']):
+        raise ValueError('Manifest exceeds asset limits; stop before downloading')
     if not shutil.which('pdftotext'):
         raise RuntimeError('pdftotext is required; no model OCR is invoked')
     root = project / 'benchmark-data/financebench'
