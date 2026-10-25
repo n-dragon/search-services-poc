@@ -1,5 +1,7 @@
 # FinanceBench diagnostic on the demo VM
 
+Latest execution: [25 October 2026 — results and failure analysis](reports/financebench-2026-10-25.md).
+
 This is an executed-data diagnostic for the public FinanceBench corpus, not a
 reproduction of Mistral's agentic QA scores. It produces no model answers and no
 QA accuracy. The demo's Vespa index is not modified.

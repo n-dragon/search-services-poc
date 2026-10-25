@@ -1,0 +1,54 @@
+{
+  "location": "local follow-up, not a rerun of the VM benchmark",
+  "method": "Presence of each original evidence token as a substring after removing non-alphanumeric characters from extracted page text. This is a diagnostic normalization check, not a table/citation/QA quality score.",
+  "pages": [
+    {
+      "id": "financebench_id_02608",
+      "doc_name": "BESTBUY_2017_10K",
+      "page_1_based": 56,
+      "compact_token_presence": 1.0
+    },
+    {
+      "id": "financebench_id_04417",
+      "doc_name": "BESTBUY_2019_10K",
+      "page_1_based": 52,
+      "compact_token_presence": 1.0
+    },
+    {
+      "id": "financebench_id_04660",
+      "doc_name": "BLOCK_2016_10K",
+      "page_1_based": 68,
+      "compact_token_presence": 1.0
+    },
+    {
+      "id": "financebench_id_10130",
+      "doc_name": "CORNING_2020_10K",
+      "page_1_based": 70,
+      "compact_token_presence": 1.0
+    },
+    {
+      "id": "financebench_id_10130",
+      "doc_name": "CORNING_2020_10K",
+      "page_1_based": 72,
+      "compact_token_presence": 1.0
+    },
+    {
+      "id": "financebench_id_02981",
+      "doc_name": "CORNING_2021_10K",
+      "page_1_based": 65,
+      "compact_token_presence": 1.0
+    },
+    {
+      "id": "financebench_id_05915",
+      "doc_name": "CVSHEALTH_2018_10K",
+      "page_1_based": 302,
+      "compact_token_presence": 1.0
+    },
+    {
+      "id": "financebench_id_05915",
+      "doc_name": "CVSHEALTH_2018_10K",
+      "page_1_based": 304,
+      "compact_token_presence": 1.0
+    }
+  ]
+}
